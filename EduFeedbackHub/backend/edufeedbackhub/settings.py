@@ -48,7 +48,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'EduFeedbackHub.urls'
+ROOT_URLCONF = 'edufeedbackhub.urls'
 
 TEMPLATES = [
     {
