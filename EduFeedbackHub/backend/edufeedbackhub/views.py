@@ -3,12 +3,12 @@ from data.qs_2024_2026 import qs_rankings
 
 
 def qs_year_list(request):
-    # 首页，显示3个年份链接
+    # Homepage, display links for 3 years
     years = sorted(qs_rankings.keys(), reverse=True)
     return render(request, 'qs_year_list.html', {'years': years})
 
 def qs_year_detail(request, year):
-    # 显示某年QS排名
+    # Display QS rankings for a specific year
     year = str(year)
     rankings = qs_rankings.get(year, [])
     return render(request, 'qs_year_detail.html', {'year': year, 'rankings': rankings})
