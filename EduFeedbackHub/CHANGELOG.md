@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2] - 2025-07-03
+### Added
+- University pages now support comments and replies
+- Each university has its own comment section
+- Comment deletion supported
+- Year context preserved when navigating back from a university page
+
+
 ## [0.1.1] - 2025-07-03
 ### Added
 - Added functionality to import QS rankings data into the database

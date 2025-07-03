@@ -25,6 +25,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.qs_year_list, name='qs_year_list'),               # Show links for 3 years
-    path('qs/<int:year>/', views.qs_year_detail, name='qs_year_detail') # Display rankings for the selected year
+    path('', views.home, name='home'),
+    path('qs/', views.qs_year_list, name='qs_year_list'),
+    path('qs/<str:year>/', views.qs_year_detail, name='qs_year_detail'),
+    path('university/<int:university_id>/', views.university_detail, name='university_detail'),
+    path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 ]

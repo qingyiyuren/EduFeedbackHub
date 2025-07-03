@@ -30,6 +30,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'backend.edufeedbackhub',
+# By default, Django only loads built-in apps.
+# You must add your own app to INSTALLED_APPS for it to be recognized.
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

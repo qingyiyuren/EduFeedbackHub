@@ -1,12 +1,12 @@
 # EduFeedbackHub
 
-EduFeedbackHub is a web application that allows users to submit and view teaching feedback 
-to help improve the quality of education.
+EduFeedbackHub is a web application that allows users to view QS university rankings and submit comments for each university to support educational feedback and improvement.
 
 ## Features
 
-- Query and display QS rankings by year (last three years).
-- Simple and clear interface for easy use.
+- Query and display QS World University Rankings by year (2024, 2025, 2026).
+- Each university has its own comment section (with reply and delete support).
+- Users can return to the same year after viewing a university detail page.
 
 ## Technology Stack
 
@@ -32,5 +32,5 @@ to help improve the quality of education.
 For questions or support, please contact:
 
 - Name: Cheng Guo  
-- Email: CXG473@student.bham.ac.uk
+- Email: CXG473@student.bham.ac.uk  
 - GitHub: https://git.cs.bham.ac.uk/projects-2024-25/CXG473
