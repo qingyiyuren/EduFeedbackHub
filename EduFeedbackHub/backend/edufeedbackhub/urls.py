@@ -17,6 +17,14 @@ Including another URLconf
 # from django.contrib import admin
 from django.urls import path
 
+# urlpatterns = [
+#     #    path('admin/', admin.site.urls),
+# ]
+# The above is the default section
+
+from . import views
+
 urlpatterns = [
-    #    path('admin/', admin.site.urls),
+    path('', views.qs_year_list, name='qs_year_list'),               # Show links for 3 years
+    path('qs/<int:year>/', views.qs_year_detail, name='qs_year_detail') # Display rankings for the selected year
 ]

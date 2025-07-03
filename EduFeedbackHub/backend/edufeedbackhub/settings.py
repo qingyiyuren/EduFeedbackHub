@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project like this: BASE_DIR / 'subdir'.(backend)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -53,8 +53,7 @@ ROOT_URLCONF = 'edufeedbackhub.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [Path(__file__).resolve().parent.parent.parent / 'templates'],  # Navigate three levels up to reach EduFeedbackHub/templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -66,7 +65,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'EduFeedbackHub.wsgi.application'
+WSGI_APPLICATION = 'edufeedbackhub.wsgi.application'
 
 
 # Database

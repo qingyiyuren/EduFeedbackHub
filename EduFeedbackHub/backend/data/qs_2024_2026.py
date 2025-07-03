@@ -1,3 +1,4 @@
+# QS World University Rankings data for 2024, 2025, and 2026.
 qs_rankings = {
     "2026": [
     {"rank": 1, "name": "Massachusetts Institute of Technology (MIT)", "region": "United States"},
