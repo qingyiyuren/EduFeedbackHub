@@ -1,15 +1,15 @@
-from django.shortcuts import render
-from data.qs_2024_2026 import qs_rankings
-
+from django.shortcuts import render, get_object_or_404
+from backend.edufeedbackhub.models import YearRanking, UniversityRanking
 
 def qs_year_list(request):
-    # Homepage, display links for 3 years
-    years = sorted(qs_rankings.keys(), reverse=True)
+    # Retrieve all years from the database, sorted in descending order.
+    years = YearRanking.objects.order_by('-year').values_list('year', flat=True)
     return render(request, 'qs_year_list.html', {'years': years})
 
 def qs_year_detail(request, year):
-    # Display QS rankings for a specific year
-    year = str(year)
-    rankings = qs_rankings.get(year, [])
+    # Query the ranking data for a specific year.
+    year_obj = get_object_or_404(YearRanking, year=year)
+    rankings = UniversityRanking.objects.filter(year=year_obj).order_by('rank')
     return render(request, 'qs_year_detail.html', {'year': year, 'rankings': rankings})
+
 
