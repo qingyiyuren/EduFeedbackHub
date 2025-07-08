@@ -11,6 +11,7 @@ django.setup()
 from backend.edufeedbackhub.models import YearRanking, UniversityRanking, University
 from backend.data.qs_2024_2026 import qs_rankings
 
+
 def load_qs_rankings():
     print("Deleting old UniversityRanking, University, YearRanking data...")
     UniversityRanking.objects.all().delete()
@@ -39,6 +40,7 @@ def load_qs_rankings():
             objs.append(obj)
         UniversityRanking.objects.bulk_create(objs)
         print(f"Inserted {len(objs)} records for year {year_str}")
+
 
 if __name__ == "__main__":
     load_qs_rankings()

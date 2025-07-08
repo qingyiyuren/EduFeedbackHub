@@ -16,18 +16,14 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path
-
-# urlpatterns = [
-#     #    path('admin/', admin.site.urls),
-# ]
-# The above is the default section
-
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('qs/', views.qs_year_list, name='qs_year_list'),
-    path('qs/<str:year>/', views.qs_year_detail, name='qs_year_detail'),
-    path('university/<int:university_id>/', views.university_detail, name='university_detail'),
-    path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
+    path('', views.root_redirect, name='root_api'),  # Redirect root URL to the home API endpoint
+    path('api/home/', views.home_api, name='home_api'),
+    path('api/years/', views.qs_year_list_api, name='qs_year_list_api'),
+    path('api/rankings/<int:year>/', views.qs_year_detail_api, name='qs_year_detail_api'),
+    path('api/university/<int:university_id>/', views.university_detail_api, name='university_detail_api'),
+    path('api/university/<int:university_id>/comment/', views.add_comment_api, name='add_comment_api'),
+    path('api/comment/<int:comment_id>/delete/', views.delete_comment_api, name='delete_comment_api'),
 ]

@@ -1,4 +1,7 @@
+# Models for EduFeedbackHub application, managing university rankings and user comments.
+
 from django.db import models
+
 
 class YearRanking(models.Model):
     year = models.CharField(max_length=4, unique=True)  # Year, e.g., '2025', unique to avoid duplicates
@@ -6,12 +9,14 @@ class YearRanking(models.Model):
     def __str__(self):
         return self.year
 
+
 class University(models.Model):
     name = models.CharField(max_length=200, unique=True)  # University name, unique to avoid duplicates
-    region = models.CharField(max_length=100)             # Region or location of the university
+    region = models.CharField(max_length=100)  # Region or location of the university
 
     def __str__(self):
         return self.name
+
 
 class UniversityRanking(models.Model):
     year = models.ForeignKey(YearRanking, on_delete=models.CASCADE, related_name='rankings')
@@ -23,6 +28,7 @@ class UniversityRanking(models.Model):
 
     def __str__(self):
         return f"{self.rank} - {self.university.name} ({self.year.year})"
+
 
 class Comment(models.Model):
     university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='comments')
