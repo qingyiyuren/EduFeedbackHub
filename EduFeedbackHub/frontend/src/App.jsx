@@ -1,32 +1,53 @@
-// Main application component that sets up frontend routing and layout
-// Uses react-router-dom to define routes and their corresponding page components
-// Wraps all pages with Layout component for consistent page structure
+/**
+ * This is the main entry point of the React frontend.
+ * It sets up client-side routing using React Router.
+ * Each route maps to a specific page component and is rendered within a shared Layout.
+ */
+
 
 import React from 'react';
 import Layout from './components/forms/Layout.jsx';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-// <Router> is the top-level component that enables routing in the React app,
-// allowing navigation between different pages without full page reloads.
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+// Page components
 import HomePage from './components/pages/HomePage';
 import QSYearListPage from './components/pages/QSYearListPage';
 import QSYearDetailPage from './components/pages/QSYearDetailPage';
-import UniversityDetailPage from './components/pages/UniversityDetailPage';
+import UniversityDetailPage from './components/pages/UniversityDetailPage.jsx';
+import UniversitySearchAddPage from './components/pages/UniversitySearchAddPage.jsx';
+import CollegeSearchAddPage from './components/pages/ColledgeSearchAddPage.jsx';
+import CollegeDetailPage from "./components/pages/CollegeDetailPage.jsx";
 
 function App() {
     return (
         <Router>
+            {/* The Layout component wraps all pages and provides shared UI (e.g., navbar) */}
             <Layout>
                 <Routes>
-                    <Route path="/" element={<HomePage/>}/>
-                    <Route path="/years" element={<QSYearListPage/>}/>
-                    <Route path="/rankings/:year" element={<QSYearDetailPage/>}/>
-                    <Route path="/university/:university_id" element={<UniversityDetailPage/>}/>
+                    {/* Homepage */}
+                    <Route path="/" element={<HomePage />} />
+
+                    {/* List of QS ranking years */}
+                    <Route path="/years" element={<QSYearListPage />} />
+
+                    {/* University rankings for a specific year */}
+                    <Route path="/rankings/:year" element={<QSYearDetailPage />} />
+
+                    {/* University detail page */}
+                    <Route path="/university/:university_id" element={<UniversityDetailPage />} />
+
+                    {/* University search and add page */}
+                    <Route path="/university/search" element={<UniversitySearchAddPage />} />
+
+                    {/* College search and add page */}
+                    <Route path="/college/search" element={<CollegeSearchAddPage />} />
+
+                    {/* College detail page */}
+                    <Route path="/college/:college_id" element={<CollegeDetailPage />} />
                 </Routes>
             </Layout>
         </Router>
     );
 }
 
-export default App; // Default export of the App component
-
+export default App;
