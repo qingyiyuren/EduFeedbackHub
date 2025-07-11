@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.4] - 2025-07-11
+
+### Added
+
+- Implemented API endpoints for querying and adding University and College entities
+- Supported search functionality for universities and colleges by name
+- Added backend logic to create new universities and colleges linked with appropriate regions and universities
+  respectively
+- Extended data model operations to allow adding colleges under universities via API
+- Enhanced overall data management consistency between University and College levels
+
 ## [0.1.3] - 2025-07-08
 
 ### Added

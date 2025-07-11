@@ -1,7 +1,6 @@
 # EduFeedbackHub
 
-EduFeedbackHub is a web application that allows users to view QS university rankings and submit comments for each  
-university to support educational feedback and improvement.
+EduFeedbackHub is a web application that allows users to view QS university rankings and submit comments for each university to support educational feedback and improvement.
 
 ## Features
 
@@ -11,6 +10,7 @@ university to support educational feedback and improvement.
 - Real-time comment updates without page reload.
 - Responsive design for multiple device types.
 - Proxy configured in development for seamless API calls.
+- **Future support for full university hierarchy queries and additions, including colleges, schools, departments, modules, lecturers, and teaching records.**
 
 ## Technology Stack
 
@@ -33,11 +33,12 @@ university to support educational feedback and improvement.
 - Add unit and integration testing.
 - Improve error handling and loading state management.
 - Deploy with CI/CD pipelines.
+- **Extend backend and frontend to fully support CRUD operations and comments for all university hierarchy levels (college, school, department, module, lecturer, teaching).**
 
 ## Contact
 
 For questions or support, please contact:
 
-- Name: Cheng Guo
-- Email: CXG473@student.bham.ac.uk
+- Name: Cheng Guo  
+- Email: CXG473@student.bham.ac.uk  
 - GitHub: https://git.cs.bham.ac.uk/projects-2024-25/CXG473
