@@ -73,12 +73,11 @@ class Module(models.Model):
 
 
 class Lecturer(models.Model):
-    """Represents a lecturer with optional academic title."""
+    """Represents a lecturer with name only."""
     name = models.CharField(max_length=100)
-    title = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
-        return f"{self.title + ' ' if self.title else ''}{self.name}"
+        return self.name
 
 
 class YearRanking(models.Model):
