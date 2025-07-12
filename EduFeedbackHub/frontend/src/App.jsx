@@ -7,7 +7,7 @@
 
 import React from 'react';
 import Layout from './components/forms/Layout.jsx';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 
 // Page components
 import HomePage from './components/pages/HomePage';
@@ -15,6 +15,8 @@ import QSYearListPage from './components/pages/QSYearListPage';
 import QSYearDetailPage from './components/pages/QSYearDetailPage';
 import EntityDetailPage from './components/pages/EntityDetailPage.jsx';
 import EntitySearchAddPage from './components/pages/EntitySearchAddPage.jsx';
+import TeachingDetailPage from './components/pages/TeachingDetailPage.jsx';
+import QuickSearchPage from './components/pages/QuickSearchPage.jsx';
 
 function App() {
     return (
@@ -23,25 +25,51 @@ function App() {
             <Layout>
                 <Routes>
                     {/* Homepage */}
-                    <Route path="/" element={<HomePage />} />
+                    <Route path="/" element={<HomePage/>}/>
 
                     {/* List of QS ranking years */}
-                    <Route path="/years" element={<QSYearListPage />} />
+                    <Route path="/years" element={<QSYearListPage/>}/>
 
                     {/* University rankings for a specific year */}
-                    <Route path="/rankings/:year" element={<QSYearDetailPage />} />
+                    <Route path="/rankings/:year" element={<QSYearDetailPage/>}/>
 
                     {/* University detail page */}
-                    <Route path="/university/:university_id" element={<EntityDetailPage entityType="university" entityDisplayName="University" />} />
+                    <Route path="/university/:university_id"
+                           element={<EntityDetailPage entityType="university" entityDisplayName="University"/>}/>
 
                     {/* University search and add page */}
-                    <Route path="/university/search" element={<EntitySearchAddPage entityType="university" entityDisplayName="University" />} />
+                    <Route path="/university/search"
+                           element={<EntitySearchAddPage entityType="university" entityDisplayName="University"/>}/>
 
                     {/* College search and add page */}
-                    <Route path="/college/search" element={<EntitySearchAddPage entityType="college" entityDisplayName="College" />} />
+                    <Route path="/college/search"
+                           element={<EntitySearchAddPage entityType="college" entityDisplayName="College"/>}/>
 
                     {/* College detail page */}
-                    <Route path="/college/:college_id" element={<EntityDetailPage entityType="college" entityDisplayName="College" />} />
+                    <Route path="/college/:college_id"
+                           element={<EntityDetailPage entityType="college" entityDisplayName="College"/>}/>
+
+                    {/* School search and add page */}
+                    <Route path="/school/search"
+                           element={<EntitySearchAddPage entityType="school" entityDisplayName="School"/>}/>
+
+                    {/* School detail page */}
+                    <Route path="/school/:school_id"
+                           element={<EntityDetailPage entityType="school" entityDisplayName="School"/>}/>
+
+                    {/* Module search and add page */}
+                    <Route path="/module/search"
+                           element={<EntitySearchAddPage entityType="module" entityDisplayName="Module"/>}/>
+
+                    {/* Module detail page */}
+                    <Route path="/module/:module_id"
+                           element={<EntityDetailPage entityType="module" entityDisplayName="Module"/>}/>
+
+                    {/* Teaching record detail page */}
+                    <Route path="/teaching/:teaching_id" element={<TeachingDetailPage/>}/>
+
+                    {/* Quick Search */}
+                    <Route path="/search" element={<QuickSearchPage/>}/>
                 </Routes>
             </Layout>
         </Router>

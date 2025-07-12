@@ -3,11 +3,11 @@
 // and renders the results in a table format.
 // Users can click on a university name to view its detail page.
 
-import React, { useEffect, useState } from 'react';  // Import React and its hooks
-import { Link, useParams } from 'react-router-dom';  // Import routing helpers
+import React, {useEffect, useState} from 'react';  // Import React and its hooks
+import {Link, useParams} from 'react-router-dom';  // Import routing helpers
 
 export default function QSYearDetailPage() {
-    const { year } = useParams();  // Get the "year" parameter from the URL (e.g., /rankings/2024)
+    const {year} = useParams();  // Get the "year" parameter from the URL (e.g., /rankings/2024)
 
     // State variables: "rankings" holds the university ranking data; "loading" indicates loading state
     const [rankings, setRankings] = useState([]);
@@ -35,29 +35,29 @@ export default function QSYearDetailPage() {
             <p><Link to="/years">Back to Years List</Link></p>
 
             {/* Rankings table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{width: '100%', borderCollapse: 'collapse'}}>
                 <thead>
-                    <tr style={{ borderBottom: '2px solid black' }}>
-                        <th style={{ textAlign: 'left', padding: '8px' }}>Rank</th>
-                        <th style={{ textAlign: 'left', padding: '8px' }}>University</th>
-                        <th style={{ textAlign: 'left', padding: '8px' }}>Region</th>
-                    </tr>
+                <tr style={{borderBottom: '2px solid black'}}>
+                    <th style={{textAlign: 'left', padding: '8px'}}>Rank</th>
+                    <th style={{textAlign: 'left', padding: '8px'}}>University</th>
+                    <th style={{textAlign: 'left', padding: '8px'}}>Region</th>
+                </tr>
                 </thead>
                 <tbody>
-                    {rankings.map(ranking => (
-                        <tr key={ranking.id} style={{ borderBottom: '1px solid #ccc' }}>
-                            <td style={{ padding: '8px' }}>{ranking.rank}</td>
+                {rankings.map(ranking => (
+                    <tr key={ranking.id} style={{borderBottom: '1px solid #ccc'}}>
+                        <td style={{padding: '8px'}}>{ranking.rank}</td>
 
-                            {/* University name links to detail page, passing year as query param */}
-                            <td style={{ padding: '8px' }}>
-                                <Link to={`/university/${ranking.university.id}?fromYear=${year}`}>
-                                    {ranking.university.name}
-                                </Link>
-                            </td>
+                        {/* University name links to detail page, passing year as query param */}
+                        <td style={{padding: '8px'}}>
+                            <Link to={`/university/${ranking.university.id}?fromYear=${year}`}>
+                                {ranking.university.name}
+                            </Link>
+                        </td>
 
-                            <td style={{ padding: '8px' }}>{ranking.university.region}</td>
-                        </tr>
-                    ))}
+                        <td style={{padding: '8px'}}>{ranking.university.region}</td>
+                    </tr>
+                ))}
                 </tbody>
             </table>
         </div>

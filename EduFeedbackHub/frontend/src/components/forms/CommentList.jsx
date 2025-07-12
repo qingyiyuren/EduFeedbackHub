@@ -12,7 +12,6 @@ export default function CommentList({
     targetType,       // e.g. "university"
     targetId,         // e.g. 3 (university ID)
     onCommentDeleted, // Function to refresh comments after deletion/addition
-    onCommentAdded    // Optional: function to call when a comment is added
 }) {
     const [replyingToId, setReplyingToId] = useState(null);  // Track which comment is being replied to
 

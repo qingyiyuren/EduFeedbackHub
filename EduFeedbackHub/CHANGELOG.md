@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.5] - 2025-07-12
+
+### Added
+
+- Fully implemented hierarchical search and commenting features for University entities
+- Enabled seamless quick search functionality across universities and related entities
+- Enhanced comment system with nested replies and deletion support at university level
+- Improved API endpoints to support detailed queries and interactions within university hierarchy
+- Optimized frontend components to integrate quick search and commenting smoothly
+- Strengthened data consistency and synchronization between backend and frontend for university-related data
+
 ## [0.1.4] - 2025-07-11
 
 ### Added
