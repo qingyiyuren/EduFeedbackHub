@@ -1,6 +1,6 @@
 """
 This file defines the data models representing the hierarchical structure of educational institutions,
-including regions, universities, colleges, schools, departments, modules, lecturers, and their related
+including regions, universities, colleges, schools, modules, lecturers, and their related
 ranking and teaching information. It also defines a comment model to support user comments on these entities.
 """
 
@@ -57,39 +57,19 @@ class School(models.Model):
         return f"{self.name} ({self.college.name})"
 
 
-class Department(models.Model):
-    """Represents a department under a school; unique per (school, name)."""
-    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='departments')
-    name = models.CharField(max_length=200)
-
-    class Meta:
-        unique_together = ('school', 'name')
-
-    def __str__(self):
-        return f"{self.name} ({self.school.name})"
-
-
 class Module(models.Model):
-    """ Represents a course module, which can belong to either a School or a Department."""
+    """ Represents a course module, which belongs to a School."""
     school = models.ForeignKey(
-        School, null=True, blank=True,
-        on_delete=models.CASCADE, related_name='modules'
-    )  # Module may belong to a School; if the School is deleted, its Modules are also deleted.
-
-    department = models.ForeignKey(
-        Department, null=True, blank=True,
-        on_delete=models.CASCADE, related_name='modules'
-    )  # Module may belong to a Department; if the Department is deleted, its Modules are also deleted.
+        School, on_delete=models.CASCADE, related_name='modules'
+    )  # Module belongs to a School; if the School is deleted, its Modules are also deleted.
 
     name = models.CharField(max_length=200)  # Name of the Module
 
     class Meta:
-        unique_together = (('school', 'name'), (
-            'department', 'name'))  # Ensure Module names are unique within the same School or Department
+        unique_together = ('school', 'name')  # Ensure Module names are unique within the same School
 
     def __str__(self):
-        belong = self.school or self.department  # Display the School or Department the Module belongs to
-        return f"{self.name} ({belong})"
+        return f"{self.name} ({self.school})"
 
 
 class Lecturer(models.Model):
@@ -156,9 +136,7 @@ class Comment(models.Model):
         School, null=True, blank=True, on_delete=models.CASCADE, related_name='comments'
     )  # Optional link to a School; cascades on delete.
 
-    department = models.ForeignKey(
-        Department, null=True, blank=True, on_delete=models.CASCADE, related_name='comments'
-    )  # Optional link to a Department; cascades on delete.
+
 
     module = models.ForeignKey(
         Module, null=True, blank=True, on_delete=models.CASCADE, related_name='comments'
@@ -182,7 +160,7 @@ class Comment(models.Model):
 
     def target_object(self):
         # Returns a string describing the target entity this comment belongs to.
-        for field in ['university', 'college', 'school', 'department', 'module', 'lecturer', 'teaching']:
+        for field in ['university', 'college', 'school', 'module', 'lecturer', 'teaching']:
             obj = getattr(self, field)
             if obj:
                 return f"{field.capitalize()}: {obj}"
