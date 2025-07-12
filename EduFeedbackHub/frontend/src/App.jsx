@@ -13,10 +13,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './components/pages/HomePage';
 import QSYearListPage from './components/pages/QSYearListPage';
 import QSYearDetailPage from './components/pages/QSYearDetailPage';
-import UniversityDetailPage from './components/pages/UniversityDetailPage.jsx';
-import UniversitySearchAddPage from './components/pages/UniversitySearchAddPage.jsx';
-import CollegeSearchAddPage from './components/pages/ColledgeSearchAddPage.jsx';
-import CollegeDetailPage from "./components/pages/CollegeDetailPage.jsx";
+import EntityDetailPage from './components/pages/EntityDetailPage.jsx';
+import EntitySearchAddPage from './components/pages/EntitySearchAddPage.jsx';
 
 function App() {
     return (
@@ -34,16 +32,16 @@ function App() {
                     <Route path="/rankings/:year" element={<QSYearDetailPage />} />
 
                     {/* University detail page */}
-                    <Route path="/university/:university_id" element={<UniversityDetailPage />} />
+                    <Route path="/university/:university_id" element={<EntityDetailPage entityType="university" entityDisplayName="University" />} />
 
                     {/* University search and add page */}
-                    <Route path="/university/search" element={<UniversitySearchAddPage />} />
+                    <Route path="/university/search" element={<EntitySearchAddPage entityType="university" entityDisplayName="University" />} />
 
                     {/* College search and add page */}
-                    <Route path="/college/search" element={<CollegeSearchAddPage />} />
+                    <Route path="/college/search" element={<EntitySearchAddPage entityType="college" entityDisplayName="College" />} />
 
                     {/* College detail page */}
-                    <Route path="/college/:college_id" element={<CollegeDetailPage />} />
+                    <Route path="/college/:college_id" element={<EntityDetailPage entityType="college" entityDisplayName="College" />} />
                 </Routes>
             </Layout>
         </Router>
