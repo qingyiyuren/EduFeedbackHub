@@ -36,8 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # By default, Django only loads built-in apps.
     # You must add your own app to INSTALLED_APPS for it to be recognized.
-    'backend.edufeedbackhub',
-    'corsheaders',  # add django-cors-headers app
+    'backend.edufeedbackhub',  # The main backend app of the project, contains core logic and models
+    'corsheaders',  # Third-party app that enables cross-origin requests (e.g. React frontend calling Django API)
+    'rest_framework.authtoken'
+    # Django REST framework's token authentication module, used for login and user authentication
 ]
 
 MIDDLEWARE = [
@@ -122,3 +124,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS configuration, allow all origins (for development only, restrict in production)
 CORS_ALLOW_ALL_ORIGINS = True
+
+LOGGING_CONFIG = 'logging.config.dictConfig'
