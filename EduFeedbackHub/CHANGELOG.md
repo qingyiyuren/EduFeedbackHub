@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.6] - 2025-07-16
+
+### Added
+
+- Implemented student and teacher account registration and login functionality
+- Enabled optional anonymous commenting for all registered users
+- Added permission control to ensure users can only delete their own comments and replies
+- Introduced rating system for evaluating teaching performance
+- Integrated search functionality for viewing teacher-specific evaluations by year and module
+- Generated line charts to visualize rating trends over time per teacher and module
+
 ## [0.1.5] - 2025-07-12
 
 ### Added

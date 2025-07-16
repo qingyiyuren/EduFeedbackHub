@@ -1,15 +1,19 @@
 """
 This file contains API view functions for modifying data.
-It includes endpoints for adding comments and various entities.
+It provides endpoints for adding, deleting comments and managing various entities,
+including user registration, login, and rating functionality.
 """
 
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-from ..models import *
-from django.apps import apps
 import json
+from decimal import Decimal
+from django.apps import apps
+from django.contrib.auth import authenticate
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from rest_framework.authtoken.models import Token
+from ..models import *
 
 
 @csrf_exempt  # Disable CSRF protection (for development/testing only).
@@ -67,10 +71,24 @@ def add_comment_api(request):
     if not target_obj:
         return JsonResponse({'error': 'No valid target object specified'}, status=400)
 
+    # 获取当前用户
+    user = None
+    is_anonymous = bool(data.get('is_anonymous', False))
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            pass
+
     # Create a Comment object, dynamically associating it with the target object
     comment = Comment.objects.create(
         content=content,
         parent=parent,
+        is_anonymous=is_anonymous,
+        user=user,
         # Using dictionary unpacking to dynamically set the foreign key field
         # Equivalent to something like university=target_obj if target_field is 'university'
         **{target_field: target_obj}
@@ -90,9 +108,23 @@ def add_comment_api(request):
 @require_POST
 def delete_comment_api(request, comment_id):
     """
-    Deletes a comment by ID.
+    Deletes a comment by ID. Only the comment's author can delete it.
     """
     comment = get_object_or_404(Comment, id=comment_id)
+    # Get current logged-in user
+    user = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        from rest_framework.authtoken.models import Token
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            pass
+    # Only the comment's author can delete it (including anonymous comments, user field always set)
+    if not user or comment.user != user:
+        return JsonResponse({'error': 'You do not have permission to delete this comment.'}, status=403)
     comment.delete()
     return JsonResponse({'message': 'Comment deleted successfully'})
 
@@ -334,3 +366,175 @@ def add_teaching_api(request):
         'module': teaching.module.name,
         'year': teaching.year,
     })
+
+
+@csrf_exempt
+@require_POST
+def login_api(request):
+    """Handles user login by verifying credentials and returning an authentication token."""
+    try:
+        # Attempt to parse JSON data from the request body
+        data = json.loads(request.body)
+    except Exception:
+        # Return 400 error if JSON is invalid
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    # Extract username and password from parsed data, default to empty string and strip whitespace
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+
+    # Check if the user with the given username exists
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        # Return 401 error if user not found
+        return JsonResponse({'error': 'Account does not exist. Please register first.'}, status=401)
+
+    # Authenticate user credentials (username and password)
+    user_auth = authenticate(username=username, password=password)
+    if user_auth is None:
+        # Return 401 error if password is incorrect
+        return JsonResponse({'error': 'Password is incorrect.'}, status=401)
+
+    # Verify if user profile exists
+    if not hasattr(user, 'profile'):
+        # Return 500 error if profile missing, ask to contact admin
+        return JsonResponse({'error': 'User profile not found. Please contact admin.'}, status=500)
+
+    # Create or get authentication token for the user
+    token, _ = Token.objects.get_or_create(user=user)
+
+    # Retrieve user role from profile
+    user_role = user.profile.role
+
+    # Return token, role, and user ID as JSON response
+    return JsonResponse({'token': token.key, 'role': user_role, 'user_id': user.id})
+
+
+@csrf_exempt
+@require_POST
+def register_api(request):
+    """Handles user registration by creating a new user and profile with a specified role."""
+    try:
+        # Attempt to parse JSON data from the request body
+        data = json.loads(request.body)
+    except Exception:
+        # Return 400 error if JSON is invalid
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    # Extract username and password from the data, stripping whitespace
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+
+    # Extract role from data, default to 'student', and convert to lowercase
+    role = data.get('role', 'student').strip().lower()
+
+    # Validate that role is either 'student' or 'lecturer'
+    if role not in ['student', 'lecturer']:
+        return JsonResponse({'error': 'Invalid role. Must be "student" or "lecturer".'}, status=400)
+
+    # Check that username and password are provided
+    if not username or not password:
+        return JsonResponse({'error': 'username and password are required'}, status=400)
+
+    # Check if a user with this username already exists
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({'error': 'Username already exists'}, status=409)
+
+    # Create a new user with the given username and password
+    user = User.objects.create_user(username=username, password=password)
+
+    # Create a related profile for the user with the specified role
+    Profile.objects.create(user=user, role=role)
+
+    # Return success message and the new user's ID
+    return JsonResponse({'message': 'Registration successful', 'user_id': user.id})
+
+
+@csrf_exempt
+@require_POST
+def rate_api(request):
+    """
+    Generic API for rating any entity (university, college, school, module, etc.).
+    Only students can rate. Auth required.
+    """
+    try:
+        # Parse JSON data from request body
+        data = json.loads(request.body)
+    except Exception:
+        # Return error if JSON is invalid
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    target_type = data.get('target_type')  # Target entity type, e.g. 'university'
+    target_id = data.get('target_id')  # ID of the target entity
+    score = data.get('score')  # Rating score
+
+    # Validate input presence
+    if not target_type or not target_id or score is None:
+        return JsonResponse({'error': 'target_type, target_id, and score are required'}, status=400)
+    try:
+        # Convert score to Decimal for precision
+        score = Decimal(str(score))
+    except Exception:
+        # Return error if score is not a valid number
+        return JsonResponse({'error': 'Invalid score'}, status=400)
+    # Check score is an integer between 1 and 5 inclusive
+    if score not in [1, 2, 3, 4, 5]:
+        return JsonResponse({'error': 'Score must be an integer between 1 and 5'}, status=400)
+
+    # Authenticate user from Authorization header token
+    auth_header = request.headers.get('Authorization')
+    user = None
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            pass
+    # Reject if user not authenticated
+    if not user:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    # Only users with profile role 'student' are allowed to rate
+    if not hasattr(user, 'profile') or user.profile.role != 'student':
+        return JsonResponse({'error': 'Only students can rate'}, status=403)
+
+    # Map target_type string to model class name
+    model_map = {
+        'university': 'University',
+        'college': 'College',
+        'school': 'School',
+        'module': 'Module',
+        'lecturer': 'Lecturer',
+        'teaching': 'Teaching',
+    }
+    # Validate target_type
+    if target_type not in model_map:
+        return JsonResponse({'error': 'Invalid target_type'}, status=400)
+    # Dynamically get the model class
+    model = apps.get_model('edufeedbackhub', model_map[target_type])
+    # Get the target object by ID
+    target_obj = model.objects.filter(id=target_id).first()
+    if not target_obj:
+        return JsonResponse({'error': 'Target object not found'}, status=404)
+
+    # Use ContentType framework to create or update a generic Rating object
+    ct = ContentType.objects.get_for_model(model)
+    rating, created = Rating.objects.get_or_create(
+        user=user,
+        content_type=ct,
+        object_id=target_id,
+        defaults={'score': score}
+    )
+    if not created:
+        # Update existing rating score
+        rating.score = score
+        rating.save()
+
+    # Calculate average score and total number of ratings for the target object
+    all_ratings = Rating.objects.filter(content_type=ct, object_id=target_id)
+    avg = all_ratings.aggregate(models.Avg('score'))['score__avg'] or 0
+    count = all_ratings.count()
+
+    # Return JSON response with average score, count, and user's current score
+    return JsonResponse({'average': round(float(avg), 1), 'count': count, 'score': float(score)})

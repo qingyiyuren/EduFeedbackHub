@@ -1,10 +1,13 @@
 """
-This file defines the data models representing the hierarchical structure of educational institutions,
-including regions, universities, colleges, schools, modules, lecturers, and their related
-ranking and teaching information. It also defines a comment model to support user comments on these entities.
+This file defines the core data models for the EduFeedbackHub backend.
+It includes models for educational entities (Region, University, College, School, Module, Lecturer, Teaching),
+user profiles (Profile), and the comment system (Comment) with support for anonymous and hierarchical comments.
 """
 
 from django.db import models
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 class Region(models.Model):
@@ -135,8 +138,6 @@ class Comment(models.Model):
         School, null=True, blank=True, on_delete=models.CASCADE, related_name='comments'
     )  # Optional link to a School; cascades on delete.
 
-
-
     module = models.ForeignKey(
         Module, null=True, blank=True, on_delete=models.CASCADE, related_name='comments'
     )  # Optional link to a Module; cascades on delete.
@@ -149,6 +150,10 @@ class Comment(models.Model):
         Teaching, null=True, blank=True, on_delete=models.CASCADE, related_name='comments'
     )  # Optional link to a Teaching record; cascades on delete.
 
+    user = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name='comments'
+    )  # The user who posted the comment; nullable to allow anonymous or deleted users. If the user is deleted, set to NULL.
+
     content = models.TextField()  # The text content of the comment.
 
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp when the comment was created.
@@ -156,6 +161,11 @@ class Comment(models.Model):
     parent = models.ForeignKey(
         'self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies'
     )  # Self-referential link to parent comment to support nested replies; cascades on delete.
+
+    is_anonymous = models.BooleanField(
+        default=False,
+        help_text="Whether the comment is anonymous (for students)"
+    )  # Indicates if the comment is posted anonymously by a student; when True, user identity should be hidden.
 
     def target_object(self):
         # Returns a string describing the target entity this comment belongs to.
@@ -170,3 +180,45 @@ class Comment(models.Model):
     def __str__(self):
         # Returns a concise string representation of the comment with its target and creation date.
         return f"Comment on {self.target_object()} ({self.created_at.date()})"
+
+
+class Profile(models.Model):
+    """User profile to distinguish between different user roles such as student or lecturer."""
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE
+    )  # One-to-one relation to Django User model; deleting User deletes profile.
+
+    role = models.CharField(
+        max_length=10,
+        choices=[('student', 'Student'), ('lecturer', 'Lecturer')]
+    )  # Role of the user, limited to either 'student' or 'lecturer'.
+
+    def __str__(self):
+        return f"{self.user.username} - {self.role}"  # String representation showing username and role.
+
+
+class Rating(models.Model):
+    """Stores ratings given by users for various objects via generic relations. Score is an integer from 1 to 5."""
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='ratings'
+    )  # The user who gave the rating; deleting the user deletes their ratings.
+
+    score = models.IntegerField()  # Rating score from 1 to 5, integer only.
+
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE
+    )  # Generic foreign key content type to link to any rated model.
+
+    object_id = models.PositiveIntegerField()  # ID of the rated object.
+
+    content_object = GenericForeignKey('content_type', 'object_id')  # Generic relation to the rated object.
+
+    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp when the rating was created.
+
+    updated_at = models.DateTimeField(auto_now=True)  # Timestamp when the rating was last updated.
+
+    class Meta:
+        unique_together = ('user', 'content_type', 'object_id')  # Each user can rate each object only once.
+
+    def __str__(self):
+        return f"{self.user.username} rated {self.content_object} {self.score}"  # String representation showing who rated what and the score.

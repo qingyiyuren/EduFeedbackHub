@@ -1,12 +1,15 @@
 """
-This file contains API view functions for querying data.
-Includes endpoints for base API, rankings, entity details, and search operations.
+This file contains API view functions for EduFeedbackHub.
+Includes endpoints for entry, rankings, details, ratings, trends, and entity search.
 """
 
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
+from django.apps import apps
+from django.db.models import Avg
+from rest_framework.authtoken.models import Token
 from ..models import *
 
 
@@ -77,13 +80,23 @@ def university_detail_api(request, university_id):
     # Get top-level comments (no parent) for the university, ordered by newest first
     comments_qs = university.comments.filter(parent=None).order_by('-created_at')
 
+    # Get rating statistics
+    ct = ContentType.objects.get_for_model(University)
+    ratings = Rating.objects.filter(content_type=ct, object_id=university_id)
+    avg_rating = ratings.aggregate(models.Avg('score'))['score__avg'] or 0
+    rating_count = ratings.count()
+
     # Recursively serialize a comment and its replies
     def serialize_comment(comment):
         return {
             'id': comment.id,
             'content': comment.content,
             'created_at': comment.created_at.isoformat(),
-            'target': comment.target_object(),
+            'is_anonymous': comment.is_anonymous,
+            'user': comment.user.id if comment.user else None,
+            'username': comment.user.username if (comment.user and not comment.is_anonymous) else None,
+            'role': comment.user.profile.role if (
+                    comment.user and hasattr(comment.user, 'profile') and not comment.is_anonymous) else None,
             'replies': [
                 serialize_comment(reply)
                 for reply in comment.replies.all().order_by('created_at')
@@ -104,6 +117,10 @@ def university_detail_api(request, university_id):
     return JsonResponse({
         'university': university_data,
         'comments': comments,
+        'rating': {
+            'average': round(float(avg_rating), 1),
+            'count': rating_count
+        }
     })
 
 
@@ -115,12 +132,22 @@ def college_detail_api(request, college_id):
     college = get_object_or_404(College, id=college_id)
     comments_qs = college.comments.filter(parent=None).order_by('-created_at')
 
+    # Get rating statistics
+    ct = ContentType.objects.get_for_model(College)
+    ratings = Rating.objects.filter(content_type=ct, object_id=college_id)
+    avg_rating = ratings.aggregate(models.Avg('score'))['score__avg'] or 0
+    rating_count = ratings.count()
+
     def serialize_comment(comment):
         return {
             'id': comment.id,
             'content': comment.content,
             'created_at': comment.created_at.isoformat(),
-            'target': comment.target_object(),
+            'is_anonymous': comment.is_anonymous,
+            'user': comment.user.id if comment.user else None,
+            'username': comment.user.username if (comment.user and not comment.is_anonymous) else None,
+            'role': comment.user.profile.role if (
+                    comment.user and hasattr(comment.user, 'profile') and not comment.is_anonymous) else None,
             'replies': [
                 serialize_comment(reply)
                 for reply in comment.replies.all().order_by('created_at')
@@ -142,6 +169,10 @@ def college_detail_api(request, college_id):
     return JsonResponse({
         'college': college_data,
         'comments': comments,
+        'rating': {
+            'average': round(float(avg_rating), 1),
+            'count': rating_count
+        }
     })
 
 
@@ -153,12 +184,22 @@ def school_detail_api(request, school_id):
     school = get_object_or_404(School, id=school_id)
     comments_qs = school.comments.filter(parent=None).order_by('-created_at')
 
+    # Get rating statistics
+    ct = ContentType.objects.get_for_model(School)
+    ratings = Rating.objects.filter(content_type=ct, object_id=school_id)
+    avg_rating = ratings.aggregate(models.Avg('score'))['score__avg'] or 0
+    rating_count = ratings.count()
+
     def serialize_comment(comment):
         return {
             'id': comment.id,
             'content': comment.content,
             'created_at': comment.created_at.isoformat(),
-            'target': comment.target_object(),
+            'is_anonymous': comment.is_anonymous,
+            'user': comment.user.id if comment.user else None,
+            'username': comment.user.username if (comment.user and not comment.is_anonymous) else None,
+            'role': comment.user.profile.role if (
+                    comment.user and hasattr(comment.user, 'profile') and not comment.is_anonymous) else None,
             'replies': [
                 serialize_comment(reply)
                 for reply in comment.replies.all().order_by('created_at')
@@ -184,6 +225,10 @@ def school_detail_api(request, school_id):
     return JsonResponse({
         'school': school_data,
         'comments': comments,
+        'rating': {
+            'average': round(float(avg_rating), 1),
+            'count': rating_count
+        }
     })
 
 
@@ -195,12 +240,22 @@ def module_detail_api(request, module_id):
     module = get_object_or_404(Module, id=module_id)
     comments_qs = module.comments.filter(parent=None).order_by('-created_at')
 
+    # Get rating statistics
+    ct = ContentType.objects.get_for_model(Module)
+    ratings = Rating.objects.filter(content_type=ct, object_id=module_id)
+    avg_rating = ratings.aggregate(models.Avg('score'))['score__avg'] or 0
+    rating_count = ratings.count()
+
     def serialize_comment(comment):
         return {
             'id': comment.id,
             'content': comment.content,
             'created_at': comment.created_at.isoformat(),
-            'target': comment.target_object(),
+            'is_anonymous': comment.is_anonymous,
+            'user': comment.user.id if comment.user else None,
+            'username': comment.user.username if (comment.user and not comment.is_anonymous) else None,
+            'role': comment.user.profile.role if (
+                    comment.user and hasattr(comment.user, 'profile') and not comment.is_anonymous) else None,
             'replies': [
                 serialize_comment(reply)
                 for reply in comment.replies.all().order_by('created_at')
@@ -242,6 +297,10 @@ def module_detail_api(request, module_id):
         'module': module_data,
         'teachings': teachings_data,
         'comments': comments,
+        'rating': {
+            'average': round(float(avg_rating), 1),
+            'count': rating_count
+        }
     })
 
 
@@ -256,13 +315,23 @@ def teaching_detail_api(request, teaching_id):
     # Get top-level comments (no parent) for this teaching, newest first
     comments_qs = teaching.comments.filter(parent=None).order_by('-created_at')
 
+    # Get rating statistics
+    ct = ContentType.objects.get_for_model(Teaching)
+    ratings = Rating.objects.filter(content_type=ct, object_id=teaching_id)
+    avg_rating = ratings.aggregate(models.Avg('score'))['score__avg'] or 0
+    rating_count = ratings.count()
+
     # Recursively serialize a comment and its nested replies
     def serialize_comment(comment):
         return {
             'id': comment.id,
             'content': comment.content,
             'created_at': comment.created_at.isoformat(),
-            'target': comment.target_object(),
+            'is_anonymous': comment.is_anonymous,
+            'user': comment.user.id if comment.user else None,
+            'username': comment.user.username if (comment.user and not comment.is_anonymous) else None,
+            'role': comment.user.profile.role if (
+                    comment.user and hasattr(comment.user, 'profile') and not comment.is_anonymous) else None,
             'replies': [
                 serialize_comment(reply)
                 for reply in comment.replies.all().order_by('created_at')
@@ -306,6 +375,7 @@ def teaching_detail_api(request, teaching_id):
     teaching_data = {
         'id': teaching.id,
         'lecturer': teaching.lecturer.name,
+        'lecturer_id': teaching.lecturer.id,
         'year': teaching.year,
         'module': teaching.module.name,
         'module_id': teaching.module.id,
@@ -316,6 +386,10 @@ def teaching_detail_api(request, teaching_id):
     return JsonResponse({
         'teaching': teaching_data,
         'comments': comments,
+        'rating': {
+            'average': round(float(avg_rating), 1),
+            'count': rating_count
+        }
     })
 
 
@@ -459,25 +533,252 @@ def search_module_api(request):
 
 @csrf_exempt
 def search_lecturer_api(request):
-    """Search for lecturers by name."""
-    query = request.GET.get('q', '').strip()
+    """Search for lecturers by name, with optional filters on university, college, school, module, and year."""
+
+    # Retrieve query and filter parameters from the GET request
+    query = request.GET.get('q', '').strip()  # Lecturer name (partial match)
+    university_filter = request.GET.get('university_filter', '').strip()
+    college_filter = request.GET.get('college_filter', '').strip()
+    school_filter = request.GET.get('school_filter', '').strip()
+    module_filter = request.GET.get('module_filter', '').strip()
+    year_filter = request.GET.get('year_filter', '').strip()
+
+    # Return early if no query is provided
     if not query:
         return JsonResponse({'lecturers': []})
 
-    lecturers = Lecturer.objects.filter(name__icontains=query)[:10]
+    # Build filtering conditions for the Teaching model
+    teaching_filters = {}
+
+    # Parse university filter (can be either an ID or a name string)
+    if university_filter:
+        # Check if the filter string contains an explicit ID (format: "Name (ID: 123)")
+        if '(ID:' in university_filter:
+            # Extract the numeric ID from the string, e.g. "Oxford (ID: 123)" → "123"
+            university_id = university_filter.split('(ID: ')[1].split(')')[0]
+            # Filter teachings where the associated university matches this ID
+            teaching_filters['module__school__college__university_id'] = university_id
+        else:
+            # If no ID is provided, treat the input as a university name substring
+            # Apply a case-insensitive filter on the university name
+            teaching_filters['module__school__college__university__name__icontains'] = university_filter
+
+    # Parse college filter (by ID or name)
+    if college_filter:
+        if '(ID:' in college_filter:
+            college_id = college_filter.split('(ID: ')[1].split(')')[0]
+            teaching_filters['module__school__college_id'] = college_id
+        else:
+            teaching_filters['module__school__college__name__icontains'] = college_filter
+
+    # Parse school filter (by ID or name)
+    if school_filter:
+        if '(ID:' in school_filter:
+            school_id = school_filter.split('(ID: ')[1].split(')')[0]
+            teaching_filters['module__school_id'] = school_id
+        else:
+            teaching_filters['module__school__name__icontains'] = school_filter
+
+    # Parse module filter (by ID or name)
+    if module_filter:
+        if '(ID:' in module_filter:
+            module_id = module_filter.split('(ID: ')[1].split(')')[0]
+            teaching_filters['module_id'] = module_id
+        else:
+            teaching_filters['module__name__icontains'] = module_filter
+
+    # Apply year filter if specified
+    if year_filter:
+        teaching_filters['year'] = year_filter
+
+    # Query Teaching records based on the filters
+    teachings_qs = Teaching.objects.filter(**teaching_filters)
+
+    # Further filter by lecturer name (case-insensitive partial match)
+    if query:
+        teachings_qs = teachings_qs.filter(lecturer__name__icontains=query)
+
+    # Get distinct lecturer IDs from the filtered teaching records
+    lecturer_ids = teachings_qs.values_list('lecturer_id', flat=True).distinct()
+
+    # Retrieve Lecturer objects matching the IDs, limit to top 10
+    lecturers = Lecturer.objects.filter(id__in=lecturer_ids)[:10]
+
+    # Prepare response data with teaching count for each lecturer
     data = []
     for lecturer in lecturers:
+        count = teachings_qs.filter(lecturer=lecturer).count()  # Count matching teachings
         data.append({
             'id': lecturer.id,
             'name': lecturer.name,
+            'teaching_count': count,
         })
 
+    # Return the lecturer search results as JSON
     return JsonResponse({'lecturers': data})
 
 
+@require_GET
+def lecturer_details_api(request, lecturer_id):
+    """
+    Retrieve detailed information about a specific lecturer, including all teaching records
+    and aggregated rating statistics. Supports optional filtering by university, college, or school.
+    """
+
+    # Get the Lecturer object by ID or return 404 if not found
+    lecturer = get_object_or_404(Lecturer, id=lecturer_id)
+
+    # Optional filters for narrowing down teaching records
+    university_id = request.GET.get('university_id')
+    college_id = request.GET.get('college_id')
+    school_id = request.GET.get('school_id')
+
+    # Base filter: only teachings by this lecturer
+    teaching_filters = {'lecturer': lecturer}
+
+    # Apply the most specific filter available (school > college > university)
+    if school_id:
+        teaching_filters['module__school_id'] = school_id
+    elif college_id:
+        teaching_filters['module__school__college_id'] = college_id
+    elif university_id:
+        teaching_filters['module__school__college__university_id'] = university_id
+
+    # Fetch all relevant Teaching records, including related module, school, college, university
+    teachings = Teaching.objects.filter(**teaching_filters).select_related(
+        'module__school__college__university'
+    ).order_by('-year', 'module__name')
+
+    # Initialize results structure and counters for rating aggregation
+    teachings_by_year = {}  # Dictionary to group teaching records by year
+    total_ratings = 0  # Total number of ratings received across all teachings
+    total_rating_sum = 0.0  # Weighted sum of all rating scores
+
+    # Loop through each teaching to compute statistics
+    for teaching in teachings:
+        year = teaching.year
+
+        # Initialize the year bucket if needed
+        if year not in teachings_by_year:
+            teachings_by_year[year] = []
+
+        # Fetch rating data for this specific teaching record
+        ct = ContentType.objects.get_for_model(Teaching)
+        ratings = Rating.objects.filter(content_type=ct, object_id=teaching.id)
+        avg_rating = ratings.aggregate(models.Avg('score'))['score__avg'] or 0
+        rating_count = ratings.count()
+
+        # Update overall statistics
+        total_ratings += rating_count
+        total_rating_sum += float(avg_rating) * rating_count
+
+        # Prepare individual teaching entry
+        teaching_data = {
+            'id': teaching.id,
+            'module_name': teaching.module.name,
+            'school_name': teaching.module.school.name,
+            'college_name': teaching.module.school.college.name,
+            'university_name': teaching.module.school.college.university.name,
+            'year': teaching.year,
+            'average_rating': round(float(avg_rating), 1),
+            'rating_count': rating_count,
+        }
+
+        # Add the teaching to the appropriate year group
+        teachings_by_year[year].append(teaching_data)
+
+    # Compute overall average rating (only if there are any ratings)
+    overall_average = 0
+    if total_ratings > 0:
+        overall_average = total_rating_sum / total_ratings
+
+    # Build response object with lecturer info and stats
+    lecturer_data = {
+        'id': lecturer.id,
+        'name': lecturer.name,
+        'total_records': teachings.count(),  # Number of teaching records after filtering
+        'total_ratings': total_ratings,  # Total number of ratings received
+        'average_rating': round(overall_average, 1),  # Overall average score
+        'teaching_records': teachings_by_year  # Teaching grouped by year
+    }
+
+    # Return as JSON response
+    return JsonResponse(lecturer_data)
+
+
+@require_GET
+def lecturer_rating_trend_api(request, lecturer_id):
+    """
+    Return rating trends for a lecturer: per year, per course, and overall. Supports filtering by university_id, college_id, or school_id.
+    """
+    # Get the lecturer object or return 404 if not found
+    lecturer = get_object_or_404(Lecturer, id=lecturer_id)
+
+    # Optional filters to narrow down teachings
+    university_id = request.GET.get('university_id')
+    college_id = request.GET.get('college_id')
+    school_id = request.GET.get('school_id')
+
+    # Base queryset: all teachings by this lecturer
+    teachings = Teaching.objects.filter(lecturer=lecturer)
+
+    # Apply most specific location filter (school > college > university)
+    if school_id:
+        teachings = teachings.filter(module__school_id=school_id)
+    elif college_id:
+        teachings = teachings.filter(module__school__college_id=college_id)
+    elif university_id:
+        teachings = teachings.filter(module__school__college__university_id=university_id)
+
+    # Optimize query to avoid extra DB hits
+    teachings = teachings.select_related('module')
+
+    # Get distinct years and module names taught
+    years = sorted(set(t.year for t in teachings))  # All years taught
+    course_names = sorted(set(t.module.name for t in teachings))  # All course/module names
+
+    # Initialize nested dictionaries to store ratings
+    course_year_rating = {name: {year: [] for year in years} for name in course_names}
+    overall_year_rating = {year: [] for year in years}
+
+    # Use Django ContentType to filter ratings tied to Teaching model
+    ct = ContentType.objects.get_for_model(Teaching)
+
+    # Aggregate ratings by module and year
+    for t in teachings:
+        ratings = Rating.objects.filter(content_type=ct, object_id=t.id)
+        avg = ratings.aggregate(Avg('score'))['score__avg']
+        if avg is not None:
+            course_year_rating[t.module.name][t.year].append(float(avg))
+            overall_year_rating[t.year].append(float(avg))
+
+    # Prepare the JSON response
+    result = {
+        'years': years,  # List of years in sorted order
+
+        # Overall average ratings per year
+        'overall': [
+            round(sum(overall_year_rating[y]) / len(overall_year_rating[y]), 2) if overall_year_rating[y] else None
+            for y in years
+        ],
+
+        # Per-course average ratings per year
+        'courses': {
+            name: [
+                round(sum(course_year_rating[name][y]) / len(course_year_rating[name][y]), 2)
+                if course_year_rating[name][y] else None
+                for y in years
+            ]
+            for name in course_names
+        }
+    }
+
+    return JsonResponse(result)
+
+
 @csrf_exempt
-def global_search_api(request):
-    """Perform a global search across all entity types."""
+def quick_search_api(request):
+    """Perform a quick search across all entity types."""
     # Get search query from URL parameter 'q' and strip whitespace
     query = request.GET.get('q', '').strip()
 
@@ -529,3 +830,62 @@ def global_search_api(request):
 
     # Return combined search results as JSON
     return JsonResponse({'results': results})
+
+
+@require_GET
+def get_user_rating_api(request):
+    """
+    Get the current user's rating for a specific entity.
+    """
+
+    # Get entity type and ID from query parameters
+    target_type = request.GET.get('target_type')
+    target_id = request.GET.get('target_id')
+
+    # Validate required parameters
+    if not target_type or not target_id:
+        return JsonResponse({'error': 'target_type and target_id are required'}, status=400)
+
+    # --- User Authentication via Token ---
+    auth_header = request.headers.get('Authorization')
+    user = None
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]  # Extract token string
+        try:
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            pass  # Invalid token
+
+    # If user is not authenticated
+    if not user:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    # --- Check if the authenticated user is a student ---
+    if not hasattr(user, 'profile') or user.profile.role != 'student':
+        return JsonResponse({'score': 0})  # Only students can rate
+
+    # --- Validate and get model by target_type ---
+    model_map = {
+        'university': 'University',
+        'college': 'College',
+        'school': 'School',
+        'module': 'Module',
+        'lecturer': 'Lecturer',
+        'teaching': 'Teaching',
+    }
+
+    # Ensure the provided type is valid
+    if target_type not in model_map:
+        return JsonResponse({'error': 'Invalid target_type'}, status=400)
+
+    # Get the model class and corresponding content type
+    model = apps.get_model('edufeedbackhub', model_map[target_type])
+    ct = ContentType.objects.get_for_model(model)
+
+    # --- Retrieve the rating object for this user and entity ---
+    try:
+        rating = Rating.objects.get(user=user, content_type=ct, object_id=target_id)
+        return JsonResponse({'score': float(rating.score)})  # Found rating
+    except Rating.DoesNotExist:
+        return JsonResponse({'score': 0})  # No rating found

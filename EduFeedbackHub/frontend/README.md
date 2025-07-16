@@ -17,7 +17,6 @@ on how to integrate TypeScript and [`typescript-eslint`](https://typescript-esli
 
 # package.json Overview
 
-The `package.json` file manages the project's metadata, dependencies, and scripts.  
-It defines the React and Vite versions used, ESLint plugins for code quality, and scripts for development (`dev`),
-building (`build`), linting (`lint`), and previewing (`preview`).  
-This configuration ensures a streamlined workflow for development and production builds in a React + Vite environment.
+This package.json sets up a React 19 + Vite 7 frontend project with ESLint-based linting.
+It manages dependencies and defines essential scripts for development, building, code quality checks, and deployment
+preview.
