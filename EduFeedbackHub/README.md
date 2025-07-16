@@ -24,7 +24,7 @@ each university, facilitating educational feedback and continuous improvement.
 1. Clone the repository.
 2. Install dependencies.
 3. Run the server.
-4. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
+4. Open http://127.0.0.1:8000/ in your browser.
 
 ## Contact
 
