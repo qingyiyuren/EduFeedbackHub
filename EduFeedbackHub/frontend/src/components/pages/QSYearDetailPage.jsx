@@ -1,10 +1,5 @@
-// This component displays the QS World University Rankings for a specific year.
-// It fetches ranking data from the backend API based on the selected year
-// and renders the results in a table format.
-// Users can click on a university name to view its detail page.
-
-import React, {useEffect, useState} from 'react';  // Import React and its hooks
-import {Link, useParams} from 'react-router-dom';  // Import routing helpers
+import React, {useEffect, useState} from 'react'; // Import React and hooks
+import {Link, useParams} from 'react-router-dom'; // Import router hooks and components
 
 export default function QSYearDetailPage() {
     const {year} = useParams();  // Get the "year" parameter from the URL (e.g., /rankings/2024)

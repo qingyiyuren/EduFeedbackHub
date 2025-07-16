@@ -1,8 +1,5 @@
-// This component fetches and displays a list of available years for QS rankings.
-// Users can click a year to navigate to the rankings page for that year.
-
-import React, {useEffect, useState} from 'react';  // Import React hooks
-import {Link, useNavigate} from 'react-router-dom'; // Import routing helpers
+import React, {useEffect, useState} from 'react';// Import React and hooks
+import {Link, useNavigate} from 'react-router-dom'; // Import router hooks and components
 
 function QSYearListPage() {
     const [years, setYears] = useState([]);  // State to store list of years
