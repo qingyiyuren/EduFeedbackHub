@@ -1,3 +1,7 @@
+/**
+ * This component allows users to view and select available years for QS rankings.
+ * Navigation to the home page and year details is provided.
+ */
 import React, {useEffect, useState} from 'react';// Import React and hooks
 import {Link, useNavigate} from 'react-router-dom'; // Import router hooks and components
 

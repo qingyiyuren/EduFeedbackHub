@@ -1,7 +1,6 @@
 /**
  * This component allows users to search for an existing entity or add a new one.
- * When an entity is selected or added, the user is redirected to its detail page.
- * If a similar entity already exists, the user is also redirected to the existing one.
+ * Users are redirected to the detail page after selection or addition.
  */
 import React, {useState} from 'react'; // Import React and useState hook
 import {Link, useNavigate, useLocation} from 'react-router-dom'; // Import router hooks and components

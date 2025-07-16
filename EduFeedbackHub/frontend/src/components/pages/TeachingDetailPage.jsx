@@ -1,87 +1,106 @@
 /**
- * This component displays the details of a teaching record (lecturer teaching a module in a specific year),
- * including the lecturer, module, and year information.
- * Users can view existing comments and submit new ones for this specific teaching instance.
+ * This component allows users to view details, comments, and ratings for a teaching record.
+ * Rating trends and threaded comments are supported.
  */
 
-import React, {useEffect, useState} from 'react';
-import {useParams, Link, useLocation} from 'react-router-dom';
-import CommentList from '../forms/CommentList.jsx';
-import CommentForm from '../forms/CommentForm.jsx';
+import React, {useEffect, useState} from 'react'; // Import React and hooks
+import {useParams, Link, useLocation} from 'react-router-dom'; // Import router hooks and components
+import CommentSection from '../forms/CommentSection.jsx';
+import RatingComponent from '../forms/RatingComponent.jsx';
+import TeacherRatingTrendChart from '../forms/TeacherRatingTrendChart.jsx';
 
-// Custom hook to parse URL query parameters
+// Custom hook to extract query parameters from the URL
 function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
 
 export default function TeachingDetailPage() {
-    const params = useParams(); // Get route parameters from URL (e.g., teaching_id)
-    const query = useQuery(); // Parse query parameters (not currently used)
-    const teachingId = params.teaching_id; // Extract teaching record ID
+    const params = useParams(); // Extract dynamic route parameters (e.g. teaching_id)
+    const query = useQuery();   // Get query parameters (currently unused)
+    const teachingId = params.teaching_id; // Extract the teaching record ID from URL
 
-    // State variables:
-    // teachingData: holds the fetched teaching record data
-    // comments: holds the list of comments related to this teaching record
-    // loading: tracks whether data is currently being loaded
-    // refreshComments: a toggle state to trigger comments refresh
+    // State for storing teaching record, comments, rating, and loading status
     const [teachingData, setTeachingData] = useState(null);
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [refreshComments, setRefreshComments] = useState(false);
+    const [refreshComments, setRefreshComments] = useState(false); // Toggle to refresh comments
+    const [ratingData, setRatingData] = useState({average: 0, count: 0}); // Average rating info
+    const [showTrend, setShowTrend] = useState(false); // Whether to show rating trend chart
 
-    // Effect hook to fetch teaching record details and comments when
-    // component mounts or when teachingId or refreshComments changes.
+    // Fetch teaching record and comments when component mounts or refresh is triggered
     useEffect(() => {
-        if (!teachingId) return; // If no teachingId, skip fetching
-        setLoading(true); // Set loading state before fetch
+        if (!teachingId) return;
+        setLoading(true);
 
-        fetch(`/api/teaching/${teachingId}/`) // Fetch teaching data from backend API
+        fetch(`/api/teaching/${teachingId}/`)
             .then(res => res.json())
             .then(data => {
-                setTeachingData(data.teaching); // Update teaching data state
-                setComments(data.comments || []); // Update comments list state
-                setLoading(false); // Data loaded, set loading false
+                setTeachingData(data.teaching);              // Set main teaching data
+                setComments(data.comments || []);            // Set comments list
+                setRatingData(data.rating || {average: 0, count: 0}); // Set rating stats
+                setLoading(false);
             })
-            .catch(() => setLoading(false)); // On error, stop loading but don't crash
+            .catch(() => setLoading(false)); // Handle error silently
     }, [teachingId, refreshComments]);
 
-    // Callback to refresh comments list after adding or deleting a comment
-    const handleCommentAdded = () => {
-        setRefreshComments(prev => !prev); // Toggle refreshComments to trigger useEffect
+    // Callback to update rating data after user rates
+    const handleRatingChange = (newAverage, newCount) => {
+        setRatingData({average: newAverage, count: newCount});
     };
 
-    // Render loading indicator if data is being fetched
+    const userRole = localStorage.getItem('role'); // Get current user role
+
+    // Refresh comment section when a new comment is added or deleted
+    const handleCommentAdded = () => {
+        setRefreshComments(prev => !prev); // Trigger re-fetch
+    };
+
+    // If data is still loading, show a loading message
     if (loading) return <p>Loading teaching record details...</p>;
 
-    // Render error message if no teaching data found
+    // If no data is available, show not found message
     if (!teachingData) return <p>Teaching record not found.</p>;
 
     return (
         <div>
-            {/* Teaching record information section */}
+            {/* Main heading */}
             <h2>Teaching Record</h2>
 
             <div style={{marginBottom: '1rem'}}>
                 {/* Display lecturer name */}
                 <p><strong>Lecturer:</strong> {teachingData.lecturer}</p>
+
+                {/* Toggle button to show/hide rating trend chart */}
+                {teachingData.lecturer_id && (
+                    <button onClick={() => setShowTrend(v => !v)} style={{marginBottom: '0.5rem'}}>
+                        {showTrend ? 'Hide Rating Trend' : 'View Rating Trend'}
+                    </button>
+                )}
+
+                {/* Conditional rendering of rating trend chart */}
+                {showTrend && teachingData.lecturer_id && (
+                    <TeacherRatingTrendChart
+                        lecturerId={teachingData.lecturer_id}
+                        schoolId={teachingData.module_info?.school?.id}
+                    />
+                )}
+
                 {/* Display module name */}
                 <p><strong>Module:</strong> {teachingData.module}</p>
-                {/* Display year taught */}
+
+                {/* Display year */}
                 <p><strong>Year:</strong> {teachingData.year}</p>
 
-                {/* Display hierarchical information if available */}
+                {/* Display hierarchical institution info if available */}
                 {teachingData.module_info && (
                     <>
-                        {/* University name if available */}
-                        {teachingData.module_info.school && teachingData.module_info.school.college && teachingData.module_info.school.college.university && (
+                        {teachingData.module_info.school?.college?.university && (
                             <p><strong>University:</strong> {teachingData.module_info.school.college.university.name}
                             </p>
                         )}
-                        {/* College name if available */}
-                        {teachingData.module_info.school && teachingData.module_info.school.college && (
+                        {teachingData.module_info.school?.college && (
                             <p><strong>College:</strong> {teachingData.module_info.school.college.name}</p>
                         )}
-                        {/* School name if available */}
                         {teachingData.module_info.school && (
                             <p><strong>School:</strong> {teachingData.module_info.school.name}</p>
                         )}
@@ -89,36 +108,29 @@ export default function TeachingDetailPage() {
                 )}
             </div>
 
-            {/* Navigation links */}
-            <p>
-                {/* Link back to the module detail page */}
-                <Link to={`/module/${teachingData.module_id}`}>
-                    Back to Module
-                </Link>
-            </p>
-
-            <p>
-                {/* Link back to homepage */}
-                <Link to="/">Back to Home</Link>
-            </p>
-
-            {/* Comments display section */}
-            <h3>Comments</h3>
-            <CommentList
-                comments={comments} // Comments data passed down
-                targetType="teaching" // Target type for comments context
-                targetId={parseInt(teachingId, 10)} // Target ID to associate comments
-                onCommentDeleted={handleCommentAdded} // Refresh comments after deletion
-                onCommentAdded={handleCommentAdded} // Refresh comments after addition
+            {/* Rating section for students */}
+            <RatingComponent
+                targetType="teaching"
+                targetId={parseInt(teachingId, 10)}
+                average={ratingData.average}
+                count={ratingData.count}
+                userRole={userRole}
+                onRatingChange={handleRatingChange}
             />
 
-            {/* Comment submission form */}
-            <h3>Leave a Comment</h3>
-            <CommentForm
-                targetType="teaching" // Context for comment form
-                targetId={parseInt(teachingId, 10)} // ID of the teaching record to comment on
-                onCommentAdded={handleCommentAdded} // Trigger refresh after comment added
+            {/* Navigation links */}
+            <p>
+                <Link to={`/module/${teachingData.module_id}`}>Back to Module</Link>
+            </p>
+            <p><Link to="/">Back to Home</Link></p>
+
+            {/* Comment section for teaching record */}
+            <CommentSection
+                targetType="teaching"
+                targetId={parseInt(teachingId, 10)}
+                targetIdName="teaching_id"
             />
         </div>
     );
 }
+

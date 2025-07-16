@@ -1,3 +1,7 @@
+/**
+ * This component allows users to view QS World University Rankings for a specific year.
+ * Rankings are displayed in a table with navigation to university details.
+ */
 import React, {useEffect, useState} from 'react'; // Import React and hooks
 import {Link, useParams} from 'react-router-dom'; // Import router hooks and components
 

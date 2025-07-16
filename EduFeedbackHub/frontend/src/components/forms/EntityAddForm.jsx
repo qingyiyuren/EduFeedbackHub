@@ -1,10 +1,10 @@
 /**
- * This component is a generic entity addition form component used to add various types of educational
- * entities such as University, College, School, Module, Lecturer, etc.
+ * This component allows users to add a new entity (university, college, school, etc.).
+ * It provides name/region suggestions and supports parent entity linkage.
  */
 
-import React, {useState, useEffect, useRef} from 'react';
-import {useNavigate} from 'react-router-dom';           // For navigation (if needed)
+import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
+import {useNavigate} from 'react-router-dom'; // Import router hook
 
 // Configuration of API endpoints, display names, parent relations, and region requirement for each entity type
 const entityConfig = {
@@ -56,11 +56,11 @@ const entityConfig = {
 };
 
 export default function EntityAddForm({
-                                          entityType = 'university',
-                                          onAddSuccess,
-                                          onAddExists,
-                                          requireRegion,
-                                          parentInfo = {},
+                                          entityType = 'university', // Type of entity to add
+                                          onAddSuccess,              // Callback on successful add
+                                          onAddExists,               // Callback if entity already exists
+                                          requireRegion,             // Override for region requirement
+                                          parentInfo = {},           // Parent entity info
                                       }) {
     // Current entity configuration
     const config = entityConfig[entityType] || entityConfig.university;
@@ -86,7 +86,7 @@ export default function EntityAddForm({
     // Detected existing entity if input matches exactly
     const [existingEntity, setExistingEntity] = useState(null);
 
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Router navigation
 
     // Refs for input containers to detect outside clicks for closing dropdowns
     const nameRef = useRef(null);
@@ -403,8 +403,7 @@ export default function EntityAddForm({
                                     cursor: 'pointer',
                                 }}
                             >
-                                {item.name}
-                                {finalRequireRegion && item.region ? ` (${item.region})` : ''}
+                                {item.name}{finalRequireRegion && item.region ? ` (${item.region})` : ''}
                             </li>
                         ))}
                     </ul>
@@ -466,7 +465,7 @@ export default function EntityAddForm({
             {existingEntity && (
                 <p style={{color: 'red'}}>
                     This {config.displayName.toLowerCase()} already exists:{' '}
-                    <a href={`/${entityType}/${existingEntity.id}`}>
+                    <a href={`/${entityType}/${existingEntity.id}`} style={{ color: '#1976d2', textDecoration: 'underline' }}>
                         {existingEntity.name}
                         {finalRequireRegion && existingEntity.region ? ` (${existingEntity.region})` : ''}
                     </a>

@@ -1,5 +1,5 @@
 """
-This file contains API view functions for EduFeedbackHub.
+This module contains API view functions for EduFeedbackHub.
 Includes endpoints for entry, rankings, details, ratings, trends, and entity search.
 """
 
@@ -622,7 +622,7 @@ def search_lecturer_api(request):
 def lecturer_details_api(request, lecturer_id):
     """
     Retrieve detailed information about a specific lecturer, including all teaching records
-    and aggregated rating statistics. Supports optional filtering by university, college, or school.
+    and aggregated rating statistics. Supports optional filtering by university, college, school, and year.
     """
 
     # Get the Lecturer object by ID or return 404 if not found
@@ -632,6 +632,7 @@ def lecturer_details_api(request, lecturer_id):
     university_id = request.GET.get('university_id')
     college_id = request.GET.get('college_id')
     school_id = request.GET.get('school_id')
+    year_filter = request.GET.get('year_filter')  # Get year filter from request
 
     # Base filter: only teachings by this lecturer
     teaching_filters = {'lecturer': lecturer}
@@ -643,6 +644,9 @@ def lecturer_details_api(request, lecturer_id):
         teaching_filters['module__school__college_id'] = college_id
     elif university_id:
         teaching_filters['module__school__college__university_id'] = university_id
+    # Apply year filter if provided
+    if year_filter:
+        teaching_filters['year'] = year_filter
 
     # Fetch all relevant Teaching records, including related module, school, college, university
     teachings = Teaching.objects.filter(**teaching_filters).select_related(
@@ -709,7 +713,7 @@ def lecturer_details_api(request, lecturer_id):
 @require_GET
 def lecturer_rating_trend_api(request, lecturer_id):
     """
-    Return rating trends for a lecturer: per year, per course, and overall. Supports filtering by university_id, college_id, or school_id.
+    Return rating trends for a lecturer: per year, per course, and overall. Supports filtering by university_id, college_id, school_id, and year.
     """
     # Get the lecturer object or return 404 if not found
     lecturer = get_object_or_404(Lecturer, id=lecturer_id)
@@ -718,6 +722,7 @@ def lecturer_rating_trend_api(request, lecturer_id):
     university_id = request.GET.get('university_id')
     college_id = request.GET.get('college_id')
     school_id = request.GET.get('school_id')
+    year_filter = request.GET.get('year_filter')  # Get year filter from request
 
     # Base queryset: all teachings by this lecturer
     teachings = Teaching.objects.filter(lecturer=lecturer)
@@ -729,6 +734,9 @@ def lecturer_rating_trend_api(request, lecturer_id):
         teachings = teachings.filter(module__school__college_id=college_id)
     elif university_id:
         teachings = teachings.filter(module__school__college__university_id=university_id)
+    # Apply year filter if provided
+    if year_filter:
+        teachings = teachings.filter(year=year_filter)
 
     # Optimize query to avoid extra DB hits
     teachings = teachings.select_related('module')

@@ -1,14 +1,12 @@
 /**
- * This component displays the details of an entity (university, college, school, module, etc.),
- * including its name, region, and related comments.
- * Users can view existing comments and submit new ones.
- * Navigation buttons are provided to search for or add sub-entities under the current entity for feedback purposes.
+ * This component allows users to view details, comments, and related actions for an entity.
+ * Navigation to sub-entities and feedback features are included.
  */
 
-import React, {useEffect, useState} from 'react';
-import {useParams, Link, useLocation, useNavigate} from 'react-router-dom';
-import CommentList from '../forms/CommentList.jsx';
-import CommentForm from '../forms/CommentForm.jsx';
+import React, {useEffect, useState} from 'react'; // Import React and hooks
+import {useParams, Link, useLocation, useNavigate} from 'react-router-dom'; // Import router hooks and components
+import CommentSection from '../forms/CommentSection.jsx';
+import RatingComponent from '../forms/RatingComponent.jsx';
 
 // Configuration for each entity type (used for routing, labels, hierarchy)
 const entityConfig = {
@@ -70,9 +68,9 @@ export default function EntityDetailPage({entityType = 'university'}) {
 
     // State for core data
     const [entityData, setEntityData] = useState(null);   // Current entity data
-    const [comments, setComments] = useState([]);         // Comments for this entity
     const [loading, setLoading] = useState(true);         // Loading indicator
     const [refreshComments, setRefreshComments] = useState(false); // Trigger refresh
+    const [ratingData, setRatingData] = useState({ average: 0, count: 0 }); // Rating data
 
     // Module-specific state
     const [modules, setModules] = useState([]);           // Not currently used
@@ -90,7 +88,7 @@ export default function EntityDetailPage({entityType = 'university'}) {
             .then(res => res.json())
             .then(data => {
                 setEntityData(data[entityType]);                  // Set core entity info
-                setComments(data.comments || []);                 // Set comments list
+                setRatingData(data.rating || { average: 0, count: 0 }); // Set rating data
                 if (entityType === 'module') setTeachings(data.teachings || []); // Set teaching records
                 setLoading(false);
             })
@@ -102,22 +100,20 @@ export default function EntityDetailPage({entityType = 'university'}) {
         if (showTeachingForm && entityType === 'module') {
             const currentYear = new Date().getFullYear();
             const yearsList = [];
-            for (let i = 2010; i <= currentYear; i++) {
+            for (let i = currentYear; i >= 2010; i--) {
                 yearsList.push(i.toString());
             }
             setYears(yearsList);
         }
     }, [showTeachingForm, entityType]);
 
-    // Triggered after comment submission/deletion
-    const handleCommentAdded = () => {
-        setRefreshComments(prev => !prev); // Toggle state to refresh data
-    };
-
     // Submit teaching record (module + lecturer + year)
     const handleAddTeaching = async () => {
-        if (!selectedYear) return alert('Please select year');
-        if (!newLecturerName.trim()) return alert('Please enter lecturer name');
+        // Validate required inputs
+        if (!newLecturerName.trim() || !selectedYear) {
+            alert('Please enter the lecturer name and select a year.');
+            return;
+        }
 
         try {
             let lecturerId;
@@ -168,6 +164,14 @@ export default function EntityDetailPage({entityType = 'university'}) {
         }
     };
 
+    // Handle rating change
+    const handleRatingChange = (newAverage, newCount) => {
+        setRatingData({ average: newAverage, count: newCount });
+    };
+
+    // Get user role from localStorage
+    const userRole = localStorage.getItem('role');
+
     // Loading / error fallback
     if (loading) return <p>Loading {config.displayName} details...</p>;
     if (!entityData) return <p>{config.displayName} not found. Please check the URL or try searching again.</p>;
@@ -212,6 +216,16 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 <div><h3>{entityData.school.name}</h3><h2>{entityData.name}</h2></div>
             )}
             {entityType === 'module' && !entityData.school && <h2>{entityData.name}</h2>}
+
+            {/* Rating Component */}
+            <RatingComponent
+                targetType={entityType}
+                targetId={parseInt(entityId, 10)}
+                average={ratingData.average}
+                count={ratingData.count}
+                userRole={userRole}
+                onRatingChange={handleRatingChange}
+            />
 
             {/* Return to ranking page if came from one */}
             {fromYear && <p><Link to={`/rankings/${fromYear}`}>Back to {fromYear} Rankings</Link></p>}
@@ -276,6 +290,7 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 >
                     🔍 Quick Search
                 </button>
+
             </div>
 
             {/* Show module teaching records and form */}
@@ -304,28 +319,30 @@ export default function EntityDetailPage({entityType = 'university'}) {
                     {showTeachingForm && (
                         <div style={{marginTop: '1rem', padding: '1rem', border: '1px solid #ccc'}}>
                             <h4>Add Teaching Record</h4>
-                            <div>
-                                <label>Lecturer: </label>
-                                <input
-                                    type="text"
-                                    placeholder="Lecturer Name"
-                                    value={newLecturerName}
-                                    onChange={(e) => setNewLecturerName(e.target.value)}
-                                    style={{width: '100%', padding: '4px'}}
-                                />
-                            </div>
-                            <div style={{marginTop: '1rem'}}>
-                                <label>Year: </label>
-                                <select
-                                    value={selectedYear}
-                                    onChange={(e) => setSelectedYear(e.target.value)}
-                                    style={{width: '100%', padding: '4px'}}
-                                >
-                                    <option value="">Select Year</option>
-                                    {years.map(year => (
-                                        <option key={year} value={year}>{year}</option>
-                                    ))}
-                                </select>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-start' }}>
+                                <div>
+                                    <label>Lecturer: </label><br />
+                                    <input
+                                        type="text"
+                                        placeholder="Lecturer Name"
+                                        value={newLecturerName}
+                                        onChange={(e) => setNewLecturerName(e.target.value)}
+                                        style={{ width: 220, padding: '4px', color: newLecturerName ? '#222' : '#888', boxSizing: 'border-box' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label>Year: </label><br />
+                                    <select
+                                        value={selectedYear}
+                                        onChange={(e) => setSelectedYear(e.target.value)}
+                                        style={{ width: 220, padding: '4px', boxSizing: 'border-box' }}
+                                    >
+                                        <option value="">Select Year</option>
+                                        {years.map(year => (
+                                            <option key={year} value={year}>{year}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                             <button onClick={handleAddTeaching} style={{marginTop: '1rem'}}>
                                 Add Teaching Record
@@ -335,22 +352,11 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 </div>
             )}
 
-            {/* Comments section */}
-            <h3>Comments</h3>
-            <CommentList
-                comments={comments}
+            {/* Comments display section */}
+            <CommentSection
                 targetType={entityType}
                 targetId={parseInt(entityId, 10)}
-                onCommentDeleted={handleCommentAdded}
-                onCommentAdded={handleCommentAdded}
-            />
-
-            {/* New comment form */}
-            <h3>Leave a Comment</h3>
-            <CommentForm
-                targetType={entityType}
-                targetId={parseInt(entityId, 10)}
-                onCommentAdded={handleCommentAdded}
+                targetIdName={config.paramName}
             />
         </div>
     );

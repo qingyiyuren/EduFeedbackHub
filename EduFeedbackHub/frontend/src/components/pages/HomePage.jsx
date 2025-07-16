@@ -1,27 +1,57 @@
-// This component renders the homepage of EduFeedbackHub with links to QS Rankings and Entities Quick Search.
-
-import React from 'react';
-import {Link} from 'react-router-dom';
+/**
+ * This component allows users to access the home page and navigate to main features.
+ * Quick search, rankings, and login/register links are provided.
+ */
+import React from 'react';// Import React
+import {Link} from 'react-router-dom'; // Import router component
 
 export default function HomePage() {
-    return (
-        <div>
-            <h1>EduFeedbackHub</h1> {/* Main title */}
-            <p>Find and provide feedback on educational institutions and courses</p> {/* Description */}
+    // Retrieve username and role from localStorage (if logged in)
+    const username = localStorage.getItem('username');
+    const role = localStorage.getItem('role');
 
-            <div style={{textAlign: 'center', marginTop: '40px'}}>
-                <div style={{marginBottom: '20px'}}>
-                    <Link to="/search" style={{fontSize: '18px', textDecoration: 'none', color: '#007bff'}}>
-                        Quick Search {/* Link to search page */}
+    return (
+        <div style={{paddingTop: 60}}>
+            {/* Display a welcome message if the user is logged in */}
+            {username && (
+                <div style={{color: '#1976d2', fontWeight: 500, marginBottom: 24, fontSize: '1.2em'}}>
+                    Welcome {username}
+                </div>
+            )}
+
+            {/* Main title */}
+            <h1 style={{marginBottom: 16}}>EduFeedbackHub</h1>
+
+            {/* Short description */}
+            <p style={{marginBottom: 40, color: '#000'}}>
+                Find and provide feedback on educational institutions and courses
+            </p>
+
+            {/* Navigation links */}
+            <div style={{marginTop: 0}}>
+                {/* Quick search for modules or lecturers */}
+                <div style={{marginBottom: 32}}>
+                    <Link to="/search">
+                        Quick Search
                     </Link>
                 </div>
-                <div>
-                    <Link to="/years" style={{fontSize: '18px', textDecoration: 'none', color: '#007bff'}}>
-                        View QS Rankings {/* Link to QS rankings page */}
+
+                {/* View QS university rankings */}
+                <div style={{marginBottom: 32}}>
+                    <Link to="/years">
+                        View QS Rankings
+                    </Link>
+                </div>
+
+                {/* Redirect to login/register if not already logged in */}
+                <div style={{marginBottom: 0}}>
+                    <Link to="/login">
+                        Register / Login
                     </Link>
                 </div>
             </div>
         </div>
     );
 }
+
 

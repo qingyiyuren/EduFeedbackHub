@@ -1,5 +1,5 @@
 """
-This file contains API view functions for modifying data.
+This module contains API view functions for modifying data.
 It provides endpoints for adding, deleting comments and managing various entities,
 including user registration, login, and rating functionality.
 """

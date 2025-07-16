@@ -1,5 +1,5 @@
 """
-This file defines the core data models for the EduFeedbackHub backend.
+This module defines the core data models for the EduFeedbackHub backend.
 It includes models for educational entities (Region, University, College, School, Module, Lecturer, Teaching),
 user profiles (Profile), and the comment system (Comment) with support for anonymous and hierarchical comments.
 """

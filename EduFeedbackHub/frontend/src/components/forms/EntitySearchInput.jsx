@@ -1,9 +1,10 @@
 /**
- * This component is a React input with autocomplete for searching entities (e.g. universities, colleges).
+ * This component allows users to search for entities with autocomplete suggestions.
+ * Parent entity filtering and custom display fields are supported.
  */
 
 
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
 
 // Configuration for each entity type
 const entityConfig = {
@@ -50,22 +51,36 @@ const entityConfig = {
 export default function EntitySearchInput({
                                               entityType = 'university',                // Type of entity to search
                                               onSelect,                                 // Callback when suggestion selected
+                                              onNoResults,                              // Callback when no results found
                                               displayFields,                            // Optional fields to show in suggestion
                                               parentInfo = {},                          // Parent entity context, e.g., { universityId: 1 }
+                                              autoNavigate = true,                      // Whether to auto-navigate on select
+                                              placeholder = '',                         // Custom placeholder
                                           }) {
-    const config = entityConfig[entityType] || entityConfig.university;
-    const finalDisplayFields = displayFields || config.defaultDisplayFields;
+    const config = entityConfig[entityType] || entityConfig.university; // Get config for current entity type
+    const finalDisplayFields = displayFields || config.defaultDisplayFields; // Fields to display in dropdown
 
-    const [query, setQuery] = useState('');               // User input value
-    const [suggestions, setSuggestions] = useState([]);   // Search results
-    const [showSuggestions, setShowSuggestions] = useState(false); // Dropdown visibility
-    const [activeIndex, setActiveIndex] = useState(-1);   // Highlighted suggestion
-    const [isFocused, setIsFocused] = useState(false);    // Input focus status
+    // State for user input value
+    const [query, setQuery] = useState('');
+    // State for search results
+    const [suggestions, setSuggestions] = useState([]);
+    // State for dropdown visibility
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    // State for highlighted suggestion
+    const [activeIndex, setActiveIndex] = useState(-1);
+    // State for input focus
+    const [isFocused, setIsFocused] = useState(false);
+    // State for showing no results message
+    const [showNoResults, setShowNoResults] = useState(false);
+    // State for query that had no results
+    const [noResultsQuery, setNoResultsQuery] = useState('');
 
-    const containerRef = useRef(null);                    // DOM ref to detect outside clicks
-    const listRefs = useRef([]);                          // Refs to suggestion items
+    // Ref for container to detect outside clicks
+    const containerRef = useRef(null);
+    // Refs for suggestion items
+    const listRefs = useRef([]);
 
-    // Construct full search API URL with query and parent params
+    // Build full search API URL with query and parent params
     const buildApiUrl = () => {
         const url = new URL(config.apiEndpoint, window.location.origin);
         url.searchParams.set('q', query); // Add query string
@@ -75,12 +90,16 @@ export default function EntitySearchInput({
         return url.toString();
     };
 
-    // Fetch suggestions when query, focus or parent info changes
+    // Effect: fetch suggestions when query, focus or parent info changes
     useEffect(() => {
         if (!query.trim() || !isFocused) {
             setSuggestions([]);               // Clear if input empty or blurred
             setShowSuggestions(false);
             setActiveIndex(-1);
+            // Clear selected entity when query is empty
+            if (!query.trim() && onSelect) {
+                onSelect(null);
+            }
             return;
         }
         if (config.parentEntityType && !parentInfo[`${config.parentEntityType}Id`]) {
@@ -93,18 +112,27 @@ export default function EntitySearchInput({
         fetch(buildApiUrl())                  // Perform API call
             .then(res => res.json())
             .then(data => {
-                setSuggestions(data[config.responseKey] || []); // Set suggestions
+                const results = data[config.responseKey] || [];
+                setSuggestions(results); // Set suggestions
                 setShowSuggestions(true);
                 setActiveIndex(-1);
+                // If no results and query is not empty, show no results message
+                if (results.length === 0 && query.trim()) {
+                    setShowNoResults(true);
+                    setNoResultsQuery(query.trim());
+                } else {
+                    setShowNoResults(false);
+                }
             })
             .catch(() => {
                 setSuggestions([]);           // On error, clear all
                 setShowSuggestions(false);
                 setActiveIndex(-1);
+                setShowNoResults(false);
             });
     }, [query, parentInfo, entityType]);
 
-    // Scroll to highlighted suggestion when it changes
+    // Effect: scroll to highlighted suggestion when it changes
     useEffect(() => {
         if (activeIndex >= 0 && listRefs.current[activeIndex]) {
             listRefs.current[activeIndex].scrollIntoView({
@@ -114,10 +142,9 @@ export default function EntitySearchInput({
         }
     }, [activeIndex]);
 
-    // Handle keyboard navigation
+    // Handle keyboard navigation in suggestions
     const handleKeyDown = (e) => {
         if (!showSuggestions) return;
-
         if (e.key === 'ArrowDown') {
             e.preventDefault();
             setActiveIndex(i => (i + 1) % suggestions.length); // Move down
@@ -143,10 +170,18 @@ export default function EntitySearchInput({
         setShowSuggestions(false);         // Close dropdown
         setActiveIndex(-1);
         setIsFocused(false);               // Blur
-        if (onSelect) onSelect(entity);    // Callback
+        if (onSelect) onSelect(entity);    // Always call onSelect, even if same entity
     };
 
-    // Click outside to close dropdown
+    // When input value changes, if cleared, also clear selection in parent
+    const handleInputChange = (e) => {
+        setQuery(e.target.value);
+        if (e.target.value === '' && onSelect) {
+            onSelect(null); // Notify parent to clear selection
+        }
+    };
+
+    // Effect: click outside to close dropdown
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -158,25 +193,23 @@ export default function EntitySearchInput({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-
-    // Component UI
+    // Render the search input and suggestions dropdown
     return (
         <div style={{position: 'relative'}} ref={containerRef}>
-            <h3>Search for {config.displayName}</h3>
-
             <input
                 value={query}
-                onChange={e => setQuery(e.target.value)}              // Update input value
-                placeholder={`Search ${config.displayName.toLowerCase()} by name`}
+                onChange={handleInputChange} // Update input value and clear selection if empty
+                placeholder={placeholder || `Search ${config.displayName.toLowerCase()} by name`}
                 onKeyDown={handleKeyDown}                             // Keyboard handler
                 onFocus={() => setIsFocused(true)}                   // Show dropdown on focus
                 onBlur={() => setIsFocused(false)}                   // Hide on blur
-                style={{width: '100%', padding: '8px'}}
+                style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc'}}
                 aria-autocomplete="list"
                 aria-controls={`${entityType}-suggestions`}
                 aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
             />
 
+            {/* Suggestions dropdown */}
             {showSuggestions && isFocused && suggestions.length > 0 && (
                 <ul
                     id={`${entityType}-suggestions`}
@@ -217,6 +250,23 @@ export default function EntitySearchInput({
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {/* No Results Message */}
+            {showNoResults && isFocused && query.trim() && (
+                <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    padding: '4px 8px',
+                    marginTop: '2px',
+                    fontSize: '12px',
+                    color: '#dc3545',
+                    zIndex: 1000,
+                }}>
+                    No {config.displayName.toLowerCase()} found for "{noResultsQuery}". You can add it.
+                </div>
             )}
         </div>
     );
