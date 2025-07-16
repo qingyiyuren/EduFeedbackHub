@@ -1,42 +1,58 @@
+/*
+   Styles for layout, logo animations, cards, and text with reduced motion support
+*/
+
+/* Container for the root element with max width, centered horizontally, with padding and centered text */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+    max-width: 1280px; /* Maximum width of the container */
+    margin: 0 auto; /* Center horizontally by setting left and right margins to auto */
+    padding: 2rem; /* Inner spacing around the content */
+    text-align: center; /* Center-align the text inside */
 }
 
+/* Styling for logo image */
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+    height: 6em; /* Fixed height */
+    padding: 1.5em; /* Inner spacing around the logo */
+    will-change: filter; /* Hint browser that filter effect will change, for performance optimization */
+    transition: filter 300ms; /* Smooth transition of filter effect over 300 milliseconds */
 }
+
+/* On hover, apply a drop shadow with a bluish glow */
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+    filter: drop-shadow(0 0 2em #646cffaa);
 }
+
+/* For React logo variant, use a different bluish-green shadow on hover */
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+    filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Define keyframes for logo spinning animation from 0 to 360 degrees rotation */
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg); /* Start at 0 degrees */
+    }
+    to {
+        transform: rotate(360deg); /* End at 360 degrees (full rotation) */
+    }
 }
 
+/* Only apply spinning animation if user prefers reduced motion is off */
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear; /* Spin infinitely every 20 seconds with linear speed */
+    }
 }
 
+/* Card component container with padding */
 .card {
-  padding: 2em;
+    padding: 2em; /* Inner spacing inside the card */
 }
 
+/* Text with muted gray color, used for "read the docs" links or notes */
 .read-the-docs {
-  color: #888;
+    color: #888; /* Medium gray text color */
 }
+
+

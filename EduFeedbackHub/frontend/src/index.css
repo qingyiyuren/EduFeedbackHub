@@ -1,68 +1,77 @@
+/*
+   Basic global styles for fonts, colors, layout, buttons, and light/dark mode
+*/
+
+/* Root element styles */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif; /* Set system and fallback fonts */
+    line-height: 1.5; /* Set default line height */
+    font-weight: 400; /* Set default font weight */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+    color-scheme: light dark; /* Support both light and dark color schemes */
+    color: rgba(255, 255, 255, 0.87); /* Default text color with slight transparency */
+    background-color: #242424; /* Dark background color */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none; /* Prevent automatic font synthesis */
+    text-rendering: optimizeLegibility; /* Improve text readability */
+    -webkit-font-smoothing: antialiased; /* Smooth fonts on WebKit browsers */
+    -moz-osx-font-smoothing: grayscale; /* Smooth fonts on Firefox for macOS */
 }
 
+/* Link styles */
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+    font-weight: 500; /* Slightly bolder text for links */
+    color: #007bff; /* Blue link color */
+    text-decoration: none; /* Remove underline */
 }
 
+/* Body styles */
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+    margin: 0; /* Remove default margin */
+    display: flex; /* Use flexbox layout */
+    place-items: center; /* Center items vertically and horizontally */
+    min-width: 320px; /* Minimum width for small screens */
+    min-height: 100vh; /* Minimum height to fill viewport vertically */
 }
 
+/* Heading 1 styles */
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+    font-size: 3.2em; /* Large font size for main headings */
+    line-height: 1.1; /* Tight line height for headings */
 }
 
+/* Button base styles */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+    border-radius: 8px; /* Rounded corners */
+    border: 1px solid transparent; /* Transparent border for layout stability */
+    padding: 0.6em 1.2em; /* Padding inside buttons */
+    font-size: 1em; /* Inherit font size */
+    font-weight: 500; /* Medium font weight */
+    font-family: inherit; /* Inherit font family */
+    background-color: #1a1a1a; /* Dark button background */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: border-color 0.25s; /* Smooth border color transition */
 }
+
+/* Button hover effect */
 button:hover {
-  border-color: #646cff;
+    border-color: #646cff; /* Change border color on hover */
 }
+
+/* Button focus styles for accessibility */
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+    outline: 4px auto -webkit-focus-ring-color; /* Visible outline on focus */
 }
 
+/* Light mode overrides */
 @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+    :root {
+        color: #213547; /* Dark text color for light mode */
+        background-color: #ffffff; /* White background in light mode */
+    }
+
+    button {
+        background-color: #f9f9f9; /* Light background for buttons */
+    }
 }

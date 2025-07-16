@@ -5,9 +5,10 @@
  */
 
 
-import React from 'react';
+import React from 'react'; // Import React
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'; // Import router hooks and components
+
 import Layout from './components/forms/Layout.jsx';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 
 // Page components
 import HomePage from './components/pages/HomePage';
@@ -17,11 +18,13 @@ import EntityDetailPage from './components/pages/EntityDetailPage.jsx';
 import EntitySearchAddPage from './components/pages/EntitySearchAddPage.jsx';
 import TeachingDetailPage from './components/pages/TeachingDetailPage.jsx';
 import QuickSearchPage from './components/pages/QuickSearchPage.jsx';
+import LoginRegisterPage from './components/pages/LoginRegisterPage.jsx';
+
 
 function App() {
     return (
         <Router>
-            {/* The Layout component wraps all pages and provides shared UI (e.g., navbar) */}
+            {/* The Layout component wraps all pages and provides shared UI (e.g., navbar, logout) */}
             <Layout>
                 <Routes>
                     {/* Homepage */}
@@ -68,8 +71,11 @@ function App() {
                     {/* Teaching record detail page */}
                     <Route path="/teaching/:teaching_id" element={<TeachingDetailPage/>}/>
 
-                    {/* Quick Search */}
+                    {/* Quick Search (Lecturer Only) */}
                     <Route path="/search" element={<QuickSearchPage/>}/>
+
+                    {/* Login/Register page */}
+                    <Route path="/login" element={<LoginRegisterPage/>}/>
                 </Routes>
             </Layout>
         </Router>
