@@ -5,8 +5,8 @@
  */
 import React, {useState} from 'react'; // Import React and useState hook
 import {Link, useNavigate, useLocation} from 'react-router-dom'; // Import router hooks and components
-import EntitySearchInput from '../forms/EntitySearchInput.jsx'; // Generic entity search input component
-import EntityAddForm from '../forms/EntityAddForm.jsx'; // Generic entity add form component
+import EntitySearchInput from '../forms/EntitySearchInput.jsx';
+import EntityAddForm from '../forms/EntityAddForm.jsx';
 
 // Custom hook to get URL query parameters
 function useQuery() {
