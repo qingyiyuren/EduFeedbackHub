@@ -71,7 +71,7 @@ def add_comment_api(request):
     if not target_obj:
         return JsonResponse({'error': 'No valid target object specified'}, status=400)
 
-    # 获取当前用户
+    # Get current user
     user = None
     is_anonymous = bool(data.get('is_anonymous', False))
     auth_header = request.headers.get('Authorization')

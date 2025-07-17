@@ -288,7 +288,7 @@ export default function EntityDetailPage({entityType = 'university'}) {
                         navigate(`/search?${searchParams.toString()}`);
                     }}
                 >
-                    🔍 Quick Search
+                    Quick Search
                 </button>
 
             </div>
