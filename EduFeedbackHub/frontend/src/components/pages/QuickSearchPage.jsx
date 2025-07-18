@@ -292,30 +292,46 @@ export default function QuickSearchPage() {
 
             {/* Search Mode Selection */}
             <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-                <h3 style={{ marginBottom: '10px' }}>Search Mode</h3>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                        <input
-                            type="radio"
-                            name="searchMode"
-                            value="lecturer"
-                            checked={searchMode === 'lecturer'}
-                            onChange={(e) => setSearchMode(e.target.value)}
-                            style={{ marginRight: '8px' }}
-                        />
-                        Search Lecturers
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                        <input
-                            type="radio"
-                            name="searchMode"
-                            value="entity"
-                            checked={searchMode === 'entity'}
-                            onChange={(e) => setSearchMode(e.target.value)}
-                            style={{ marginRight: '8px' }}
-                        />
-                        Browse Institutions & Courses
-                    </label>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
+                    <div>
+                        <h3 style={{ marginBottom: '10px' }}>Search Mode</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '4px' }}>
+                                <input
+                                    type="radio"
+                                    name="searchMode"
+                                    value="lecturer"
+                                    checked={searchMode === 'lecturer'}
+                                    onChange={(e) => setSearchMode(e.target.value)}
+                                    style={{ marginRight: '8px' }}
+                                />
+                                Search Lecturers
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="searchMode"
+                                    value="entity"
+                                    checked={searchMode === 'entity'}
+                                    onChange={(e) => setSearchMode(e.target.value)}
+                                    style={{ marginRight: '8px' }}
+                                />
+                                Browse Institutions & Courses
+                            </label>
+                        </div>
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#555', maxWidth: 420, marginLeft: 16 }}>
+                        <strong>Tips:</strong>
+                        <ul style={{ margin: 0, paddingLeft: 18 }}>
+                            <li><b>To search</b> for information (such as rating trends or comments) about <b>lecturers already added</b> to this site, please use <b>Search Lecturers</b>.</li>
+                            <li><b>To search for a university, college, school, or module</b>, please use <b>Browse Institutions & Courses</b>.</li>
+                            <li>If you can <b>not find a university, college, school, or module</b>, please use the corresponding <b>add</b> function.</li>
+                            <li><b>To add a lecturer entry</b>, you must first create or select the following in order through <b>Browse Institutions & Courses</b>:</li>
+                        </ul>
+                        <div style={{marginTop: 4, marginLeft: 18}}>
+                            University → College → School → Module → Teaching Record (with Lecturer and Year)
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -556,14 +572,6 @@ export default function QuickSearchPage() {
                 >
                     {getSearchButtonText()}
                 </button>
-
-                {/* Add tip below the Search button in lecturer mode */}
-                {searchMode === 'lecturer' && (
-                    <div style={{ marginTop: '12px', fontSize: '13px', color: '#888' }}>
-                        If you can not find the lecturer, you may try again with different conditions.<br />
-                        You can also switch to Browse Institutions & Courses mode above to add a new lecturer.
-                    </div>
-                )}
             </div>
 
             {/* Search Results */}

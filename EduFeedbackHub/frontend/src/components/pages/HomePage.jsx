@@ -31,12 +31,12 @@ export default function HomePage() {
             <div style={{marginTop: 0}}>
                 {/* Quick search for modules or lecturers */}
                 <div style={{marginBottom: 32}}>
-                    {/* Guide: You can search or add lecturers, institutions, courses, etc. */}
+                    {/* Guide: You can search or add lecturers, institutions, courses, and more. */}
                     <div style={{fontSize: '0.95em', color: '#555', marginBottom: 4}}>
-                        You can search or add lecturers, institutions, courses, and more.
+                        You can quickly search or add a new item (such as a university, course, or lecturer).
                     </div>
                     <Link to="/search">
-                        Quick Search
+                        Quick Search & Add New Item
                     </Link>
                 </div>
 

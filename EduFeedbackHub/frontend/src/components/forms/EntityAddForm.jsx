@@ -474,7 +474,7 @@ export default function EntityAddForm({
 
             {/* Submit button */}
             <button type="submit" style={{padding: '8px 16px'}}>
-                Add {config.displayName}
+                Add
             </button>
         </form>
     );

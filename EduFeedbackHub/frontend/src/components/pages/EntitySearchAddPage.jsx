@@ -91,8 +91,8 @@ export default function EntitySearchAddPage({
                 <h2 style={{marginBottom: '0.5rem'}}>{mergedParentInfo.schoolName}</h2>
             )}
 
-            {/* Title for the search or add section */}
-            <h3>Search or Add a {entityDisplayName}</h3>
+            {/* Title for the search section */}
+            <h3>Search a {entityDisplayName}</h3>
 
             {/* Render generic entity search input */}
             <EntitySearchInput
@@ -110,7 +110,7 @@ export default function EntitySearchAddPage({
                     if (searchEntity && searchEntity.id) {
                         navigate(`/${entityType}/${searchEntity.id}`);
                     } else {
-                        window.alert('Please select an entity to search.');
+                        window.alert(`Please select a ${entityDisplayName.toLowerCase()} to search.`);
                     }
                 }}
             >
