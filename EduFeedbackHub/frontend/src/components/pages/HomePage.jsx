@@ -31,6 +31,10 @@ export default function HomePage() {
             <div style={{marginTop: 0}}>
                 {/* Quick search for modules or lecturers */}
                 <div style={{marginBottom: 32}}>
+                    {/* Guide: You can search or add lecturers, institutions, courses, etc. */}
+                    <div style={{fontSize: '0.95em', color: '#555', marginBottom: 4}}>
+                        You can search or add lecturers, institutions, courses, and more.
+                    </div>
                     <Link to="/search">
                         Quick Search
                     </Link>
@@ -38,6 +42,10 @@ export default function HomePage() {
 
                 {/* View QS university rankings */}
                 <div style={{marginBottom: 32}}>
+                    {/* Guide: View QS World University Rankings */}
+                    <div style={{fontSize: '0.95em', color: '#555', marginBottom: 4}}>
+                        View QS World University Rankings.
+                    </div>
                     <Link to="/years">
                         View QS Rankings
                     </Link>
@@ -45,6 +53,10 @@ export default function HomePage() {
 
                 {/* Redirect to login/register if not already logged in */}
                 <div style={{marginBottom: 0}}>
+                    {/* Guide: Register or log in to your account */}
+                    <div style={{fontSize: '0.95em', color: '#555', marginBottom: 4}}>
+                        Register or log in to your account.
+                    </div>
                     <Link to="/login">
                         Register / Login
                     </Link>

@@ -413,7 +413,7 @@ export default function EntityAddForm({
             {/* Region input and suggestions if required */}
             {finalRequireRegion && (
                 <div style={{position: 'relative', marginBottom: 20}} ref={regionRef}>
-                    <label htmlFor={`${entityType}-region`}>Region:</label>
+                    <label htmlFor={`${entityType}-region`}>Country or Region:</label>
                     <input
                         id={`${entityType}-region`}
                         type="text"
@@ -421,7 +421,7 @@ export default function EntityAddForm({
                         onChange={e => setRegion(e.target.value)}
                         onKeyDown={handleRegionKeyDown}
                         autoComplete="off"
-                        placeholder="Enter or select region"
+                        placeholder="Enter or select country or region"
                         style={{width: '100%', padding: 6, fontSize: 16}}
                     />
                     {showRegionSuggestions && regionSuggestions.length > 0 && (

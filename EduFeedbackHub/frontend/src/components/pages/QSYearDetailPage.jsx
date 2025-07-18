@@ -39,7 +39,7 @@ export default function QSYearDetailPage() {
                 <tr style={{borderBottom: '2px solid black'}}>
                     <th style={{textAlign: 'left', padding: '8px'}}>Rank</th>
                     <th style={{textAlign: 'left', padding: '8px'}}>University</th>
-                    <th style={{textAlign: 'left', padding: '8px'}}>Region</th>
+                    <th style={{textAlign: 'left', padding: '8px'}}>Country or Region</th>
                 </tr>
                 </thead>
                 <tbody>
