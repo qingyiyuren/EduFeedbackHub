@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.7] - 2025-07-24
+
+### Added
+
+- Added a feature to display the user's visit history, enhancing user engagement and quick navigation based on UAT
+  feedback
+- Optimized the Tips section with clearer, more user-friendly guidance to improve the overall search experience
+- Integrated AI-powered sentiment analysis for comments on teaching records, providing deeper insights into feedback
+  sentiment
+
 ## [0.1.6] - 2025-07-16
 
 ### Added

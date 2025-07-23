@@ -42,6 +42,9 @@ export default function QuickSearchPage() {
     // State for user's visit history
     const [visitHistory, setVisitHistory] = useState([]); // Stores the user's recent visit records
 
+    // Remove AI sentiment analysis state and handler from QuickSearchPage
+    // (sentimentResult, sentimentLoading, sentimentError, handleAnalyzeSentiment, and related UI are deleted)
+
     // Fetch visit history for the current user on component mount
     useEffect(() => {
         // Get token from localStorage (assumes login stores it as 'token')
@@ -721,12 +724,14 @@ export default function QuickSearchPage() {
                             </div>
                         </div>
                         {/* Show/Hide Trend Chart Button */}
-                        <button
-                            style={{marginTop: 16, marginBottom: 8}}
-                            onClick={() => setShowTrendChart(v => !v)}
-                        >
-                            {showTrendChart ? 'Hide Rating Trend Chart' : 'View Rating Trend Chart'}
-                        </button>
+                        <div style={{ display: 'flex', gap: 12, marginTop: 16, marginBottom: 8 }}>
+                            <button
+                                onClick={() => setShowTrendChart(v => !v)}
+                                style={{ marginRight: 8 }}
+                            >
+                                {showTrendChart ? 'Hide Rating Trend Chart' : 'View Rating Trend Chart'}
+                            </button>
+                        </div>
                         {/* Trend Chart */}
                         {showTrendChart && lastSearchFilters.lecturerId && (
                             <TeacherRatingTrendChart

@@ -54,6 +54,8 @@ urlpatterns = [
     # Get lecturer details with teaching records
     path('api/lecturer/<int:lecturer_id>/rating_trend/', views.lecturer_rating_trend_api,
          name='lecturer_rating_trend_api'),
+    # Lecturer sentiment analysis (AI comment analysis)
+    path('api/lecturer/<int:lecturer_id>/sentiment/', views.lecturer_sentiment_api, name='lecturer_sentiment_api'),
 
     ## Add APIs for entities
     path('api/university/add/', views.add_university_api, name='add_university_api'),  # Add a new university
@@ -73,4 +75,6 @@ urlpatterns = [
     path('api/login/', views.login_api, name='login_api'),  # User login and token retrieval
     ## Visit History API (GET and POST handled in one view)
     path('api/visit-history/', views.visit_history_api, name='visit_history_api'),# Retrieve or submit visit history (GET/POST)
+    # Teaching sentiment analysis (AI comment analysis)
+    path('api/teaching/<int:teaching_id>/sentiment/', views.teaching_sentiment_api, name='teaching_sentiment_api'),
 ]

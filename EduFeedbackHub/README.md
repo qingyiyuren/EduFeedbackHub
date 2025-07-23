@@ -6,12 +6,16 @@ each university, facilitating educational feedback and continuous improvement.
 ## Features
 
 - Browse and query QS World University Rankings for 2024–2026.
-- Commenting system with replies, deletions, and optional anonymous posting across all university hierarchy levels,
-  including modules and lecturers.
-- Student and teacher account registration and login with permission controls to delete only own comments.
-- Rating system featuring search by teacher, year, and module.
-- Data visualization through rating trend line charts over time.
-- Real-time comment updates and seamless return to the same ranking year after viewing details.
+- Comprehensive commenting system with nested replies, comment deletions, and optional anonymous posting across all
+  levels of the university hierarchy, including modules and lecturers.
+- Secure student and teacher account registration and login with strict permission controls allowing users to delete
+  only their own comments and replies.
+- Detailed rating system supporting advanced search by teacher, academic year, and module.
+- Interactive data visualization using dynamic rating trend line charts to track performance over time.
+- Real-time comment updates with instant synchronization across users.
+- Seamless navigation experience preserving the current ranking year context after viewing detailed pages.
+- Added AI-powered sentiment analysis for teaching record comments, offering insightful feedback interpretation.
+- User visit history feature enabling quick access to recently viewed entities and enhancing user engagement.
 
 ## Technology Stack
 

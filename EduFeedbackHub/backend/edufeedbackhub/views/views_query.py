@@ -13,6 +13,7 @@ from rest_framework.authtoken.models import Token
 from ..models import *
 from django.utils import timezone
 from datetime import timedelta
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
 # Useful for guiding users or tools to a meaningful starting point.
@@ -784,6 +785,93 @@ def lecturer_rating_trend_api(request, lecturer_id):
     }
 
     return JsonResponse(result)
+
+
+@require_GET
+def lecturer_sentiment_api(request, lecturer_id):
+    """
+    Analyze sentiment of all comments for a given lecturer using VADER.
+    Returns aggregate sentiment statistics and optionally per-comment sentiment.
+    """
+    # Get the Lecturer object by ID or return 404 if not found
+    lecturer = get_object_or_404(Lecturer, id=lecturer_id)
+
+    # Get all comments linked to this lecturer (including replies)
+    comments = Comment.objects.filter(lecturer=lecturer)
+
+    analyzer = SentimentIntensityAnalyzer()
+    sentiment_results = []
+    agg = {'pos': 0, 'neu': 0, 'neg': 0, 'compound': 0}
+    count = 0
+
+    for comment in comments:
+        text = comment.content or ''
+        scores = analyzer.polarity_scores(text)
+        sentiment_results.append({
+            'id': comment.id,
+            'content': text,
+            'sentiment': scores
+        })
+        agg['pos'] += scores['pos']
+        agg['neu'] += scores['neu']
+        agg['neg'] += scores['neg']
+        agg['compound'] += scores['compound']
+        count += 1
+
+    # Compute average sentiment scores
+    avg = {k: (v / count if count > 0 else 0) for k, v in agg.items()}
+
+    return JsonResponse({
+        'lecturer_id': lecturer.id,
+        'lecturer_name': lecturer.name,
+        'comment_count': count,
+        'average_sentiment': avg,
+        'comments': sentiment_results  # Optionally include per-comment sentiment
+    })
+
+
+@require_GET
+def teaching_sentiment_api(request, teaching_id):
+    """
+    Analyze sentiment of all comments for a given teaching record using VADER.
+    Returns aggregate sentiment statistics and optionally per-comment sentiment.
+    """
+    # Get the Teaching object by ID or return 404 if not found
+    teaching = get_object_or_404(Teaching, id=teaching_id)
+
+    # Get all comments linked to this teaching (including replies)
+    comments = Comment.objects.filter(teaching=teaching)
+
+    analyzer = SentimentIntensityAnalyzer()
+    sentiment_results = []
+    agg = {'pos': 0, 'neu': 0, 'neg': 0, 'compound': 0}
+    count = 0
+
+    for comment in comments:
+        text = comment.content or ''
+        scores = analyzer.polarity_scores(text)
+        sentiment_results.append({
+            'id': comment.id,
+            'content': text,
+            'sentiment': scores
+        })
+        agg['pos'] += scores['pos']
+        agg['neu'] += scores['neu']
+        agg['neg'] += scores['neg']
+        agg['compound'] += scores['compound']
+        count += 1
+
+    # Compute average sentiment scores
+    avg = {k: (v / count if count > 0 else 0) for k, v in agg.items()}
+
+    return JsonResponse({
+        'teaching_id': teaching.id,
+        'lecturer_name': teaching.lecturer.name,
+        'module_name': teaching.module.name,
+        'comment_count': count,
+        'average_sentiment': avg,
+        'comments': sentiment_results  # Optionally include per-comment sentiment
+    })
 
 
 @csrf_exempt
