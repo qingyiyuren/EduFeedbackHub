@@ -3,8 +3,8 @@
  * Search results and navigation are provided.
  */
 
-import React, { useState, useEffect } from 'react'; // Import React and useState/useEffect hooks
-import { useLocation, Link, useNavigate } from 'react-router-dom'; // Import router hooks and components
+import React, {useState, useEffect} from 'react'; // Import React and useState/useEffect hooks
+import {useLocation, Link, useNavigate} from 'react-router-dom'; // Import router hooks and components
 import EntitySearchInput from '../forms/EntitySearchInput.jsx';
 import EntityAddForm from '../forms/EntityAddForm.jsx';
 import TeacherRatingTrendChart from '../forms/TeacherRatingTrendChart.jsx';
@@ -13,7 +13,7 @@ export default function QuickSearchPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const query = new URLSearchParams(location.search);
-    
+
     // State for search and filters
     const [searchMode, setSearchMode] = useState('lecturer'); // 'lecturer' or 'entity'
     // Remove searchQuery, use selectedLecturer only
@@ -27,7 +27,7 @@ export default function QuickSearchPage() {
     const [selectedLecturer, setSelectedLecturer] = useState(null);
     const [lecturerDetails, setLecturerDetails] = useState(null);
     const [searched, setSearched] = useState(false); // 是否已提交搜索
-    
+
     // State for add form
     const [showAddForm, setShowAddForm] = useState(false);
     const [addFormEntityType, setAddFormEntityType] = useState('');
@@ -39,6 +39,27 @@ export default function QuickSearchPage() {
     // Add state to control chart visibility
     const [showTrendChart, setShowTrendChart] = useState(false);
 
+    // State for user's visit history
+    const [visitHistory, setVisitHistory] = useState([]); // Stores the user's recent visit records
+
+    // Fetch visit history for the current user on component mount
+    useEffect(() => {
+        // Get token from localStorage (assumes login stores it as 'token')
+        const token = localStorage.getItem('token');
+        if (!token) return; // If not logged in, skip
+        fetch('/api/visit-history/', {
+            headers: {
+                'Authorization': `Token ${token}` // Add token for authentication
+            }
+        })
+            .then(res => res.json())
+            .then(data => setVisitHistory(data))
+            .catch(err => {
+                console.error('Failed to fetch visit history:', err);
+                setVisitHistory([]);
+            });
+    }, []);
+
     // Get filter values from URL params
     useEffect(() => {
         const q = query.get('q');
@@ -46,17 +67,17 @@ export default function QuickSearchPage() {
         const schoolName = query.get('schoolName');
         const moduleId = query.get('moduleId');
         const moduleName = query.get('moduleName');
-        
+
         // Set search query if provided
         // if (q) {
         //     setSearchQuery(q);
         // }
-        
+
         if (schoolId && schoolName) {
-            setSelectedSchool({ id: schoolId, name: schoolName });
+            setSelectedSchool({id: schoolId, name: schoolName});
         }
         if (moduleId && moduleName) {
-            setSelectedModule({ id: moduleId, name: moduleName });
+            setSelectedModule({id: moduleId, name: moduleName});
         }
     }, [query]);
 
@@ -117,7 +138,7 @@ export default function QuickSearchPage() {
     const handleEntitySearch = () => {
         let targetEntity = null;
         let targetId = null;
-        
+
         // Determine which entity to navigate to based on what's selected
         if (selectedModule) {
             targetEntity = 'module';
@@ -132,7 +153,7 @@ export default function QuickSearchPage() {
             targetEntity = 'university';
             targetId = selectedUniversity.id;
         }
-        
+
         if (targetEntity && targetId) {
             navigate(`/${targetEntity}/${targetId}`);
         }
@@ -187,7 +208,7 @@ export default function QuickSearchPage() {
                 setSelectedModule(newEntity);
                 break;
         }
-        
+
         // Navigate to the new entity's detail page
         navigate(`/${addFormEntityType}/${newEntity.id}`);
     };
@@ -195,31 +216,31 @@ export default function QuickSearchPage() {
     // Show add form for specific entity type
     const showAddFormFor = (entityType) => {
         let parentInfo = {};
-        
+
         switch (entityType) {
             case 'college':
                 if (!selectedUniversity) {
                     alert('Please select a university first.');
                     return;
                 }
-                parentInfo = { university: selectedUniversity };
+                parentInfo = {university: selectedUniversity};
                 break;
             case 'school':
                 if (!selectedCollege) {
                     alert('Please select a college first.');
                     return;
                 }
-                parentInfo = { college: selectedCollege };
+                parentInfo = {college: selectedCollege};
                 break;
             case 'module':
                 if (!selectedSchool) {
                     alert('Please select a school first.');
                     return;
                 }
-                parentInfo = { school: selectedSchool };
+                parentInfo = {school: selectedSchool};
                 break;
         }
-        
+
         setAddFormEntityType(entityType);
         setAddFormParentInfo(parentInfo);
         setShowAddForm(true);
@@ -230,19 +251,8 @@ export default function QuickSearchPage() {
         showAddFormFor(entityType);
     };
 
-    // 自动选中第一个讲师并显示 details
-    // This useEffect is no longer needed as details are fetched after search.
-    // useEffect(() => {
-    //     if (searchMode === 'lecturer' && lecturers.length > 0) {
-    //         setSelectedLecturer(lecturers[0].id);
-    //         handleLecturerSelect(lecturers[0].id);
-    //     } else {
-    //         setSelectedLecturer(null);
-    //         setLecturerDetails(null);
-    //     }
-    // }, [lecturers, searchMode]);
 
-    // 输入框变化时重置 searched 状态
+    // Reset 'searched' state when the input value changes
     useEffect(() => {
         setSearched(false);
     }, []);
@@ -261,15 +271,6 @@ export default function QuickSearchPage() {
         }
     }, [selectedUniversity, selectedCollege, selectedSchool, selectedModule, selectedYear]);
 
-    // When a lecturer is selected, always refresh details
-    // This useEffect is no longer needed as details are fetched after search.
-    // useEffect(() => {
-    //     if (searchMode === 'lecturer' && selectedLecturer) {
-    //         handleLecturerSelect(selectedLecturer);
-    //     }
-    //     // eslint-disable-next-line
-    // }, [selectedLecturer, searchMode, selectedUniversity, selectedCollege, selectedSchool, selectedModule, selectedYear]);
-
     /**
      * Helper function to generate a human-readable filter description for display.
      * Shows the most specific filter selected by the user, or 'showing all data' if no filter.
@@ -284,49 +285,133 @@ export default function QuickSearchPage() {
     return (
         <div>
             <h1>Quick Search</h1>
-            <p>Search for lecturers or navigate to entities with flexible filtering.</p>
-            
-            <Link to="/" style={{ marginBottom: '20px', display: 'block' }}>
+            <Link to="/" style={{marginBottom: '20px', display: 'block'}}>
                 Back to Home
             </Link>
+            {/* --- Visit History Section (now below Back to Home) --- */}
+            {/* Always display the user's visit history section, even if empty */}
+            <div style={{
+                marginBottom: '20px',
+                padding: '10px',
+                border: '1px solid #eee',
+                borderRadius: '6px',
+                background: '#f6f6f6'
+            }}>
+                <h4 style={{marginBottom: 8}}>Your Recent Visits</h4>
+                {visitHistory.length > 0 ? (
+                    <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
+                        {visitHistory.slice(0, 5).map((record, idx) => {
+                            // Determine the correct detail page path for each entity type
+                            let path = '/';
+                            switch (record.entityType) {
+                                case 'university':
+                                    path = `/university/${record.entityId}`;
+                                    break;
+                                case 'college':
+                                    path = `/college/${record.entityId}`;
+                                    break;
+                                case 'school':
+                                    path = `/school/${record.entityId}`;
+                                    break;
+                                case 'module':
+                                    path = `/module/${record.entityId}`;
+                                    break;
+                                case 'lecturer':
+                                    path = `/lecturer/${record.entityId}`;
+                                    break;
+                                case 'teaching':
+                                    path = `/teaching/${record.entityId}`;
+                                    break;
+                                default:
+                                    path = '/';
+                            }
+                            // Always append ?fromVisit=1 to signal 'recent visit' navigation
+                            const linkPath = path + '?fromVisit=1';
+                            return (
+                                <li key={record.id || idx} style={{marginBottom: 6}}>
+                                    {/* Render as a clickable link with ?fromVisit=1 */}
+                                    <Link
+                                        to={linkPath}
+                                        style={{
+                                            color: '#1976d2',
+                                            textDecoration: 'none', // Remove underline
+                                            fontSize: '13px',
+                                            background: 'none',
+                                            border: 'none',
+                                            padding: 0,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <span
+                                            style={{fontWeight: 500}}>{record.entityType.charAt(0).toUpperCase() + record.entityType.slice(1)}:</span> {record.entityName}
+                                        <span style={{color: '#aaa', marginLeft: 8, fontSize: 11}}>
+                                            {/* Show the visit time in local format */}
+                                            {record.timestamp ? new Date(record.timestamp).toLocaleString() : ''}
+                                        </span>
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                ) : (
+                    <div style={{color: '#888', fontSize: 14, padding: '8px 0'}}>
+                        No recent visits yet.
+                    </div>
+                )}
+            </div>
 
             {/* Search Mode Selection */}
-            <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
+            <div style={{
+                marginBottom: '20px',
+                padding: '15px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                backgroundColor: '#f8f9fa'
+            }}>
+                <div style={{display: 'flex', alignItems: 'flex-start', gap: '24px'}}>
                     <div>
-                        <h3 style={{ marginBottom: '10px' }}>Search Mode</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '4px' }}>
+                        <h3 style={{marginBottom: '10px'}}>Search Mode</h3>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                            <label
+                                style={{display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '4px'}}>
                                 <input
                                     type="radio"
                                     name="searchMode"
                                     value="lecturer"
                                     checked={searchMode === 'lecturer'}
                                     onChange={(e) => setSearchMode(e.target.value)}
-                                    style={{ marginRight: '8px' }}
+                                    style={{marginRight: '8px'}}
                                 />
                                 Search Lecturers
                             </label>
-                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                            <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}}>
                                 <input
                                     type="radio"
                                     name="searchMode"
                                     value="entity"
                                     checked={searchMode === 'entity'}
                                     onChange={(e) => setSearchMode(e.target.value)}
-                                    style={{ marginRight: '8px' }}
+                                    style={{marginRight: '8px'}}
                                 />
                                 Browse Institutions & Courses
                             </label>
                         </div>
                     </div>
-                    <div style={{ fontSize: '13px', color: '#555', maxWidth: 420, marginLeft: 16 }}>
+                    <div style={{fontSize: '13px', color: '#555', maxWidth: 420, marginLeft: 16}}>
                         <strong>Tips:</strong>
-                        <ul style={{ margin: 0, paddingLeft: 18 }}>
-                            <li><b>To search</b> for information (such as rating trends or comments) about <b>lecturers already added</b> to this site, please use <b>Search Lecturers</b>.</li>
-                            <li><b>To search for a university, college, school, or module</b>, please use <b>Browse Institutions & Courses</b>.</li>
-                            <li>If you can <b>not find a university, college, school, or module</b>, please use the corresponding <b>add</b> function.</li>
-                            <li><b>To add a lecturer entry</b>, you must first create or select the following in order through <b>Browse Institutions & Courses</b>:</li>
+                        <ul style={{margin: 0, paddingLeft: 18}}>
+                            <li><b>To search</b> for information (such as rating trends or comments) about <b>lecturers
+                                already added</b> to this site, please use <b>Search Lecturers</b>.
+                            </li>
+                            <li><b>To search for a university, college, school, or module</b>, please use <b>Browse
+                                Institutions & Courses</b>.
+                            </li>
+                            <li>If you can <b>not find a university, college, school, or module</b>, please use the
+                                corresponding <b>add</b> function.
+                            </li>
+                            <li><b>To add a lecturer entry</b>, you must first create or select the following in order
+                                through <b>Browse Institutions & Courses</b>:
+                            </li>
                         </ul>
                         <div style={{marginTop: 4, marginLeft: 18}}>
                             University → College → School → Module → Teaching Record (with Lecturer and Year)
@@ -336,13 +421,13 @@ export default function QuickSearchPage() {
             </div>
 
             {/* Search Form */}
-            <div style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
+            <div style={{marginBottom: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px'}}>
                 <h3>Search Filters</h3>
-                
+
                 {/* Lecturer Name Search - Only for lecturer mode */}
                 {searchMode === 'lecturer' && (
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>Lecturer Name:</label>
+                    <div style={{marginBottom: '15px'}}>
+                        <label style={{display: 'block', marginBottom: '5px'}}>Lecturer Name:</label>
                         <EntitySearchInput
                             entityType="lecturer"
                             entityDisplayName="Lecturer"
@@ -357,9 +442,14 @@ export default function QuickSearchPage() {
                 )}
 
                 {/* University Filter */}
-                <div style={{ marginBottom: '15px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                        <label style={{ display: 'block', marginBottom: '0' }}>University (Optional):</label>
+                <div style={{marginBottom: '15px'}}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '5px'
+                    }}>
+                        <label style={{display: 'block', marginBottom: '0'}}>University (Optional):</label>
                         <button
                             type="button"
                             onClick={() => showAddFormFor('university')}
@@ -394,7 +484,7 @@ export default function QuickSearchPage() {
                         onNoResults={handleNoResults}
                     />
                     {selectedUniversity && (
-                        <div style={{ marginTop: '5px', fontSize: '14px', color: '#666' }}>
+                        <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
                             Selected: {selectedUniversity.name}
                         </div>
                     )}
@@ -402,9 +492,14 @@ export default function QuickSearchPage() {
 
                 {/* College Filter */}
                 {selectedUniversity && (
-                    <div style={{ marginBottom: '15px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                            <label style={{ display: 'block', marginBottom: '0' }}>College (Optional):</label>
+                    <div style={{marginBottom: '15px'}}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '5px'
+                        }}>
+                            <label style={{display: 'block', marginBottom: '0'}}>College (Optional):</label>
                             <button
                                 type="button"
                                 onClick={() => showAddFormFor('college')}
@@ -433,12 +528,12 @@ export default function QuickSearchPage() {
                                 }
                             }}
                             autoNavigate={false}
-                            parentInfo={{ universityId: selectedUniversity.id, universityName: selectedUniversity.name }}
+                            parentInfo={{universityId: selectedUniversity.id, universityName: selectedUniversity.name}}
                             placeholder="Search and select college..."
                             onNoResults={handleNoResults}
                         />
                         {selectedCollege && (
-                            <div style={{ marginTop: '5px', fontSize: '14px', color: '#666' }}>
+                            <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
                                 Selected: {selectedCollege.name}
                             </div>
                         )}
@@ -447,9 +542,14 @@ export default function QuickSearchPage() {
 
                 {/* School Filter */}
                 {selectedCollege && (
-                    <div style={{ marginBottom: '15px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                            <label style={{ display: 'block', marginBottom: '0' }}>School (Optional):</label>
+                    <div style={{marginBottom: '15px'}}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '5px'
+                        }}>
+                            <label style={{display: 'block', marginBottom: '0'}}>School (Optional):</label>
                             <button
                                 type="button"
                                 onClick={() => showAddFormFor('school')}
@@ -477,17 +577,17 @@ export default function QuickSearchPage() {
                                 }
                             }}
                             autoNavigate={false}
-                            parentInfo={{ 
-                                universityId: selectedUniversity.id, 
+                            parentInfo={{
+                                universityId: selectedUniversity.id,
                                 universityName: selectedUniversity.name,
-                                collegeId: selectedCollege.id, 
-                                collegeName: selectedCollege.name 
+                                collegeId: selectedCollege.id,
+                                collegeName: selectedCollege.name
                             }}
                             placeholder="Search and select school..."
                             onNoResults={handleNoResults}
                         />
                         {selectedSchool && (
-                            <div style={{ marginTop: '5px', fontSize: '14px', color: '#666' }}>
+                            <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
                                 Selected: {selectedSchool.name}
                             </div>
                         )}
@@ -496,9 +596,14 @@ export default function QuickSearchPage() {
 
                 {/* Module Filter */}
                 {selectedSchool && (
-                    <div style={{ marginBottom: '15px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                            <label style={{ display: 'block', marginBottom: '0' }}>Module (Optional):</label>
+                    <div style={{marginBottom: '15px'}}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '5px'
+                        }}>
+                            <label style={{display: 'block', marginBottom: '0'}}>Module (Optional):</label>
                             <button
                                 type="button"
                                 onClick={() => showAddFormFor('module')}
@@ -520,19 +625,19 @@ export default function QuickSearchPage() {
                             entityDisplayName="Module"
                             onSelect={(entity) => setSelectedModule(entity)}
                             autoNavigate={false}
-                            parentInfo={{ 
-                                universityId: selectedUniversity.id, 
+                            parentInfo={{
+                                universityId: selectedUniversity.id,
                                 universityName: selectedUniversity.name,
-                                collegeId: selectedCollege.id, 
+                                collegeId: selectedCollege.id,
                                 collegeName: selectedCollege.name,
-                                schoolId: selectedSchool.id, 
-                                schoolName: selectedSchool.name 
+                                schoolId: selectedSchool.id,
+                                schoolName: selectedSchool.name
                             }}
                             placeholder="Search and select module..."
                             onNoResults={handleNoResults}
                         />
                         {selectedModule && (
-                            <div style={{ marginTop: '5px', fontSize: '14px', color: '#666' }}>
+                            <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
                                 Selected: {selectedModule.name}
                             </div>
                         )}
@@ -541,12 +646,19 @@ export default function QuickSearchPage() {
 
                 {/* Year Filter - Only for lecturer mode */}
                 {searchMode === 'lecturer' && (
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>Year (Optional):</label>
+                    <div style={{marginBottom: '15px'}}>
+                        <label style={{display: 'block', marginBottom: '5px'}}>Year (Optional):</label>
                         <select
                             value={selectedYear}
                             onChange={(e) => setSelectedYear(e.target.value)}
-                            style={{ width: 320, minWidth: 320, maxWidth: 320, padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                            style={{
+                                width: 320,
+                                minWidth: 320,
+                                maxWidth: 320,
+                                padding: '8px',
+                                borderRadius: '4px',
+                                border: '1px solid #ccc'
+                            }}
                         >
                             <option value="">All Years</option>
                             {years.map(year => (
@@ -575,7 +687,7 @@ export default function QuickSearchPage() {
             </div>
 
             {/* Search Results */}
-            <div style={{ marginTop: 24 }}>
+            <div style={{marginTop: 24}}>
                 <h3>Search Results</h3>
                 {/* Removed the 'No lecturer found' error message for a cleaner UI */}
                 {/* 只显示 details 区域 */}
@@ -583,16 +695,21 @@ export default function QuickSearchPage() {
 
             {/* Lecturer Details */}
             {searched && lecturerDetails && lastSearchFilters.lecturerId && (
-                <div style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
+                <div style={{
+                    padding: '20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    backgroundColor: '#f8f9fa'
+                }}>
                     <h3>Lecturer Details: {lecturerDetails.name}</h3>
                     {/* Show current filter description below the title */}
-                    <div style={{ color: '#888', marginBottom: 8 }}>
+                    <div style={{color: '#888', marginBottom: 8}}>
                         {getFilterDesc()}
                     </div>
                     {/* Overall Statistics */}
-                    <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: 'white', borderRadius: '4px' }}>
+                    <div style={{marginBottom: '20px', padding: '15px', backgroundColor: 'white', borderRadius: '4px'}}>
                         <h4>Overall Statistics</h4>
-                        <div style={{ display: 'flex', gap: '20px' }}>
+                        <div style={{display: 'flex', gap: '20px'}}>
                             <div>
                                 <strong>Total Teaching Records:</strong> {lecturerDetails.total_records || 0}
                             </div>
@@ -605,20 +722,20 @@ export default function QuickSearchPage() {
                         </div>
                         {/* Show/Hide Trend Chart Button */}
                         <button
-                          style={{ marginTop: 16, marginBottom: 8 }}
-                          onClick={() => setShowTrendChart(v => !v)}
+                            style={{marginTop: 16, marginBottom: 8}}
+                            onClick={() => setShowTrendChart(v => !v)}
                         >
-                          {showTrendChart ? 'Hide Rating Trend Chart' : 'View Rating Trend Chart'}
+                            {showTrendChart ? 'Hide Rating Trend Chart' : 'View Rating Trend Chart'}
                         </button>
                         {/* Trend Chart */}
                         {showTrendChart && lastSearchFilters.lecturerId && (
-                          <TeacherRatingTrendChart
-                            lecturerId={lastSearchFilters.lecturerId || null}
-                            universityId={lastSearchFilters.universityId || null}
-                            collegeId={lastSearchFilters.collegeId || null}
-                            schoolId={lastSearchFilters.schoolId || null}
-                            year_filter={lastSearchFilters.year || null}
-                          />
+                            <TeacherRatingTrendChart
+                                lecturerId={lastSearchFilters.lecturerId || null}
+                                universityId={lastSearchFilters.universityId || null}
+                                collegeId={lastSearchFilters.collegeId || null}
+                                schoolId={lastSearchFilters.schoolId || null}
+                                year_filter={lastSearchFilters.year || null}
+                            />
                         )}
                     </div>
 
@@ -629,22 +746,32 @@ export default function QuickSearchPage() {
                             {Object.entries(lecturerDetails.teaching_records)
                                 .sort((a, b) => Number(b[0]) - Number(a[0])) // Sort years descending
                                 .map(([year, records]) => (
-                                    <div key={year} style={{ marginBottom: '15px', padding: '15px', backgroundColor: 'white', borderRadius: '4px' }}>
-                                        <h5 style={{ marginBottom: '10px', color: '#28a745' }}>Year: {year}</h5>
+                                    <div key={year} style={{
+                                        marginBottom: '15px',
+                                        padding: '15px',
+                                        backgroundColor: 'white',
+                                        borderRadius: '4px'
+                                    }}>
+                                        <h5 style={{marginBottom: '10px', color: '#28a745'}}>Year: {year}</h5>
                                         {records.map(record => (
-                                            <div key={record.id} style={{ marginBottom: '10px', padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
-                                                <div style={{ fontWeight: 'bold' }}>
+                                            <div key={record.id} style={{
+                                                marginBottom: '10px',
+                                                padding: '10px',
+                                                border: '1px solid #eee',
+                                                borderRadius: '4px'
+                                            }}>
+                                                <div style={{fontWeight: 'bold'}}>
                                                     {record.module_name}
                                                 </div>
-                                                <div style={{ color: '#666', fontSize: '14px' }}>
+                                                <div style={{color: '#666', fontSize: '14px'}}>
                                                     School: {record.school_name} → {record.college_name} → {record.university_name}
                                                 </div>
-                                                <div style={{ display: 'flex', gap: '20px', marginTop: '5px' }}>
+                                                <div style={{display: 'flex', gap: '20px', marginTop: '5px'}}>
                                                     <span>
-                                                        <strong>Rating:</strong> {record.average_rating?.toFixed(1) || 'N/A'} 
+                                                        <strong>Rating:</strong> {record.average_rating?.toFixed(1) || 'N/A'}
                                                         ({record.rating_count || 0} ratings)
                                                     </span>
-                                                    <Link to={`/teaching/${record.id}`} style={{ color: '#1976d2' }}>
+                                                    <Link to={`/teaching/${record.id}`} style={{color: '#1976d2'}}>
                                                         View Details →
                                                     </Link>
                                                 </div>
@@ -658,35 +785,40 @@ export default function QuickSearchPage() {
             )}
 
             {loading && (
-                <div style={{ textAlign: 'center', padding: '20px' }}>
+                <div style={{textAlign: 'center', padding: '20px'}}>
                     Loading...
                 </div>
             )}
 
             {/* Add Entity Form */}
             {showAddForm && (
-                <div style={{ 
-                    position: 'fixed', 
-                    top: 0, 
-                    left: 0, 
-                    right: 0, 
-                    bottom: 0, 
-                    backgroundColor: 'rgba(0,0,0,0.5)', 
-                    display: 'flex', 
-                    justifyContent: 'center', 
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
                     alignItems: 'center',
                     zIndex: 1000
                 }}>
-                    <div style={{ 
-                        backgroundColor: 'white', 
-                        padding: '20px', 
-                        borderRadius: '8px', 
-                        maxWidth: '500px', 
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        maxWidth: '500px',
                         width: '90%',
                         maxHeight: '80vh',
                         overflowY: 'auto'
                     }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '20px'
+                        }}>
                             <h2>Add New {addFormEntityType.charAt(0).toUpperCase() + addFormEntityType.slice(1)}</h2>
                             <button
                                 onClick={() => setShowAddForm(false)}

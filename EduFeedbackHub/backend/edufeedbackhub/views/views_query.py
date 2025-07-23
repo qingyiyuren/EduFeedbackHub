@@ -11,6 +11,8 @@ from django.apps import apps
 from django.db.models import Avg
 from rest_framework.authtoken.models import Token
 from ..models import *
+from django.utils import timezone
+from datetime import timedelta
 
 
 # Useful for guiding users or tools to a meaningful starting point.
@@ -897,3 +899,87 @@ def get_user_rating_api(request):
         return JsonResponse({'score': float(rating.score)})  # Found rating
     except Rating.DoesNotExist:
         return JsonResponse({'score': 0})  # No rating found
+
+
+@csrf_exempt
+def visit_history_api(request):
+    """
+    GET: Return the current user's recent visit history records (max 20).
+    POST: Save a new visit record for the current user (any entity type).
+    Both require token authentication (Token in Authorization header).
+    """
+    # Get user from token
+    user = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token'}, status=401)
+    if not user:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    if request.method == 'GET':
+        # Query recent visit history for this user
+        records = VisitHistory.objects.filter(user=user).order_by('-timestamp')[:20]
+        # Serialize records for JSON response
+        data = [
+            {
+                'id': r.id,
+                'entityType': r.entity_type,
+                'entityId': r.entity_id,
+                'entityName': r.entity_name,
+                'timestamp': r.timestamp.isoformat(),
+            }
+            for r in records
+        ]
+        return JsonResponse(data, safe=False)
+    elif request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        # --- Backend deduplication: only save if no recent record for this user/entity ---
+        now = timezone.now()
+        one_minute_ago = now - timedelta(minutes=1)
+        exists = VisitHistory.objects.filter(
+            user=user,
+            entity_type=data.get('entityType', ''),
+            entity_id=data.get('entityId'),
+            timestamp__gte=one_minute_ago
+        ).exists()
+        if exists:
+            # Return the latest record (or just a message)
+            latest = VisitHistory.objects.filter(
+                user=user,
+                entity_type=data.get('entityType', ''),
+                entity_id=data.get('entityId')
+            ).order_by('-timestamp').first()
+            return JsonResponse({
+                'id': latest.id,
+                'entityType': latest.entity_type,
+                'entityId': latest.entity_id,
+                'entityName': latest.entity_name,
+                'timestamp': latest.timestamp.isoformat(),
+                'info': 'duplicate visit ignored'
+            })
+        # Create VisitHistory record
+        record = VisitHistory.objects.create(
+            user=user,
+            entity_type=data.get('entityType', ''),
+            entity_id=data.get('entityId'),
+            entity_name=data.get('entityName', ''),
+        )
+        return JsonResponse({
+            'id': record.id,
+            'entityType': record.entity_type,
+            'entityId': record.entity_id,
+            'entityName': record.entity_name,
+            'timestamp': record.timestamp.isoformat(),
+        })
+    else:
+        # Method not allowed
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

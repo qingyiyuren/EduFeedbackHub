@@ -26,12 +26,13 @@ export default function TeachingDetailPage() {
     const [refreshComments, setRefreshComments] = useState(false); // Toggle to refresh comments
     const [ratingData, setRatingData] = useState({average: 0, count: 0}); // Average rating info
     const [showTrend, setShowTrend] = useState(false); // Whether to show rating trend chart
+    // State to ensure visit is only recorded once per page load
+    const [visitRecorded, setVisitRecorded] = useState(false);
 
-    // Fetch teaching record and comments when component mounts or refresh is triggered
+    // Fetch teaching record and comments when component mounts or teachingId changes
     useEffect(() => {
         if (!teachingId) return;
         setLoading(true);
-
         fetch(`/api/teaching/${teachingId}/`)
             .then(res => res.json())
             .then(data => {
@@ -39,9 +40,35 @@ export default function TeachingDetailPage() {
                 setComments(data.comments || []);            // Set comments list
                 setRatingData(data.rating || {average: 0, count: 0}); // Set rating stats
                 setLoading(false);
+                setVisitRecorded(false); // Reset visitRecorded when teachingId changes
             })
             .catch(() => setLoading(false)); // Handle error silently
-    }, [teachingId, refreshComments]);
+    }, [teachingId]);
+
+    // Record visit history only once per teaching page load
+    useEffect(() => {
+        const fromVisit = query.get('fromVisit'); // Check if navigation is from recent visit
+        if (!teachingId || visitRecorded) return;
+        if (fromVisit === '1') return; // Do not record if from recent visit
+        const token = localStorage.getItem('token');
+        if (token && teachingData && teachingData.lecturer && teachingData.module && teachingData.year) {
+            // Compose a readable name for the teaching record
+            const entityName = `${teachingData.lecturer} - ${teachingData.module} (${teachingData.year})`;
+            fetch('/api/visit-history/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}` // Add token for authentication
+                },
+                body: JSON.stringify({
+                    entityType: 'teaching',
+                    entityId: teachingData.id,
+                    entityName: entityName
+                })
+            });
+            setVisitRecorded(true); // Mark as recorded to prevent duplicate
+        }
+    }, [teachingId, teachingData, visitRecorded, query]);
 
     // Callback to update rating data after user rates
     const handleRatingChange = (newAverage, newCount) => {

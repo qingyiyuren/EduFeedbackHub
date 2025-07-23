@@ -222,3 +222,23 @@ class Rating(models.Model):
 
     def __str__(self):
         return f"{self.user.username} rated {self.content_object} {self.score}"  # String representation showing who rated what and the score.
+
+
+class VisitHistory(models.Model):
+    """
+    Stores a user's visit record for any entity (lecturer, university, college, school, module, teaching, etc).
+    Used for visit history/footprint feature.
+    """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='visit_histories'
+    )  # The user who visited the entity
+    entity_type = models.CharField(max_length=32)  # e.g. 'lecturer', 'university', 'college', 'school', 'module', 'teaching'
+    entity_id = models.IntegerField()  # The ID of the visited entity
+    entity_name = models.CharField(max_length=200)  # The name of the visited entity
+    timestamp = models.DateTimeField(auto_now_add=True)  # When the visit occurred
+
+    class Meta:
+        ordering = ['-timestamp']  # Most recent first
+
+    def __str__(self):
+        return f"{self.user.username} visited {self.entity_type}:{self.entity_name} at {self.timestamp}"  # String representation

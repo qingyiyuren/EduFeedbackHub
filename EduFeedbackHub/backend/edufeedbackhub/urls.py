@@ -71,4 +71,6 @@ urlpatterns = [
     ## User Authentication
     path('api/register/', views.register_api, name='register_api'),  # Register a new user account
     path('api/login/', views.login_api, name='login_api'),  # User login and token retrieval
+    ## Visit History API (GET and POST handled in one view)
+    path('api/visit-history/', views.visit_history_api, name='visit_history_api'),# Retrieve or submit visit history (GET/POST)
 ]

@@ -80,6 +80,9 @@ export default function EntityDetailPage({entityType = 'university'}) {
     const [years, setYears] = useState([]);               // Available year options
     const [newLecturerName, setNewLecturerName] = useState(''); // New lecturer name
 
+    // State to ensure visit is only recorded once per page load
+    const [visitRecorded, setVisitRecorded] = useState(false);
+
     // Fetch entity details and comments
     useEffect(() => {
         if (!entityId) return;
@@ -91,9 +94,48 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 setRatingData(data.rating || { average: 0, count: 0 }); // Set rating data
                 if (entityType === 'module') setTeachings(data.teachings || []); // Set teaching records
                 setLoading(false);
+                setVisitRecorded(false); // Reset visitRecorded when entity changes
             })
             .catch(() => setLoading(false));                      // Handle errors silently
-    }, [entityId, refreshComments, entityType]);
+    }, [entityId, entityType]);
+
+    // Record visit history only once per entity page load
+    useEffect(() => {
+        const fromVisit = query.get('fromVisit'); // Check if navigation is from recent visit
+        if (!entityId || visitRecorded) return;
+        if (fromVisit === '1') return; // Do not record if from recent visit
+        const token = localStorage.getItem('token');
+        if (token && entityData && entityData.name) {
+            // Compose a hierarchical name for visit history
+            let hierarchicalName = entityData.name;
+            if (entityType === 'college' && entityData.university) {
+                hierarchicalName = `${entityData.university.name} - ${entityData.name}`;
+            } else if (entityType === 'school' && entityData.college && entityData.college.university) {
+                hierarchicalName = `${entityData.college.university.name} - ${entityData.college.name} - ${entityData.name}`;
+            } else if (entityType === 'school' && entityData.college) {
+                hierarchicalName = `${entityData.college.name} - ${entityData.name}`;
+            } else if (entityType === 'module' && entityData.school && entityData.school.college && entityData.school.college.university) {
+                hierarchicalName = `${entityData.school.college.university.name} - ${entityData.school.college.name} - ${entityData.school.name} - ${entityData.name}`;
+            } else if (entityType === 'module' && entityData.school && entityData.school.college) {
+                hierarchicalName = `${entityData.school.college.name} - ${entityData.school.name} - ${entityData.name}`;
+            } else if (entityType === 'module' && entityData.school) {
+                hierarchicalName = `${entityData.school.name} - ${entityData.name}`;
+            }
+            fetch('/api/visit-history/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}` // Add token for authentication
+                },
+                body: JSON.stringify({
+                    entityType: entityType,
+                    entityId: entityData.id,
+                    entityName: hierarchicalName
+                })
+            });
+            setVisitRecorded(true); // Mark as recorded to prevent duplicate
+        }
+    }, [entityId, entityType, entityData, visitRecorded, query]);
 
     // Populate year dropdown (only when form is shown)
     useEffect(() => {
