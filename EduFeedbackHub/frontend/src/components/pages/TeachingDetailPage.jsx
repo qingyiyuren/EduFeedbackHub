@@ -129,34 +129,44 @@ export default function TeachingDetailPage() {
                 {/* AI Analyze Comments Button */}
                 <button
                     onClick={handleAnalyzeSentiment}
-                    style={{ backgroundColor: '#6c63ff', color: 'white', border: 'none', borderRadius: 4, padding: '8px 12px', cursor: 'pointer', marginLeft: 8 }}
+                    style={{
+                        backgroundColor: '#6c63ff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 4,
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                        marginLeft: 8
+                    }}
                 >
                     AI Analyze Comments
                 </button>
                 {/* Sentiment Analysis Result */}
-                {sentimentLoading && <div style={{ marginTop: 12 }}>Analyzing comments...</div>}
-                {sentimentError && <div style={{ marginTop: 12, color: 'red' }}>{sentimentError}</div>}
+                {sentimentLoading && <div style={{marginTop: 12}}>Analyzing comments...</div>}
+                {sentimentError && <div style={{marginTop: 12, color: 'red'}}>{sentimentError}</div>}
                 {sentimentResult && (
-                    <div style={{ marginTop: 12, background: '#f4f6fa', borderRadius: 6, padding: 12 }}>
-                        <h4 style={{ margin: 0, marginBottom: 6 }}>AI Sentiment Analysis</h4>
-                        <div style={{ fontSize: 14, marginBottom: 6 }}>
-                            <strong>Comments analyzed:</strong> {sentimentResult.comment_count}<br />
+                    <div style={{marginTop: 12, background: '#f4f6fa', borderRadius: 6, padding: 12}}>
+                        <h4 style={{margin: 0, marginBottom: 6}}>AI Sentiment Analysis</h4>
+                        <div style={{fontSize: 14, marginBottom: 6}}>
+                            <strong>Comments analyzed:</strong> {sentimentResult.comment_count}<br/>
                             <strong>Average Sentiment:</strong>
-                            <span style={{ marginLeft: 8 }}>
+                            <span style={{marginLeft: 8}}>
                                 Positive: {sentimentResult.average_sentiment.pos.toFixed(2)} | Neutral: {sentimentResult.average_sentiment.neu.toFixed(2)} | Negative: {sentimentResult.average_sentiment.neg.toFixed(2)} | Compound: {sentimentResult.average_sentiment.compound.toFixed(2)}
                             </span>
                         </div>
                         {/* Optionally show per-comment sentiment breakdown */}
-                        <details style={{ fontSize: 13, marginTop: 6 }}>
+                        <details style={{fontSize: 13, marginTop: 6}}>
+
                             <summary>Show per-comment sentiment</summary>
-                            <ul style={{ margin: 0, paddingLeft: 18 }}>
+                            <ul style={{margin: 0, paddingLeft: 18}}>
                                 {sentimentResult.comments.map(c => (
-                                    <li key={c.id} style={{ marginBottom: 4 }}>
-                                        <span style={{ color: c.sentiment.compound > 0.2 ? '#28a745' : c.sentiment.compound < -0.2 ? '#dc3545' : '#888' }}>
+                                    <li key={c.id} style={{marginBottom: 4}}>
+                                        <span
+                                            style={{color: c.sentiment.compound > 0.2 ? '#28a745' : c.sentiment.compound < -0.2 ? '#dc3545' : '#888'}}>
                                             {c.sentiment.compound > 0.2 ? '😊' : c.sentiment.compound < -0.2 ? '😞' : '😐'}
                                         </span>
-                                        <span style={{ marginLeft: 6 }}>{c.content}</span>
-                                        <span style={{ marginLeft: 8, color: '#888' }}>
+                                        <span style={{marginLeft: 6}}>{c.content}</span>
+                                        <span style={{marginLeft: 8, color: '#888'}}>
                                             (pos: {c.sentiment.pos.toFixed(2)}, neu: {c.sentiment.neu.toFixed(2)}, neg: {c.sentiment.neg.toFixed(2)}, comp: {c.sentiment.compound.toFixed(2)})
                                         </span>
                                     </li>
