@@ -19,6 +19,7 @@ import EntitySearchAddPage from './components/pages/EntitySearchAddPage.jsx';
 import TeachingDetailPage from './components/pages/TeachingDetailPage.jsx';
 import QuickSearchPage from './components/pages/QuickSearchPage.jsx';
 import LoginRegisterPage from './components/pages/LoginRegisterPage.jsx';
+import ProfilePage from './components/pages/ProfilePage.jsx';
 
 
 function App() {
@@ -76,6 +77,8 @@ function App() {
 
                     {/* Login/Register page */}
                     <Route path="/login" element={<LoginRegisterPage/>}/>
+                    {/* Profile page for students and lecturers */}
+                    <Route path="/profile" element={<ProfilePage/>}/>
                 </Routes>
             </Layout>
         </Router>

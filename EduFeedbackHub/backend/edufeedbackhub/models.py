@@ -193,6 +193,16 @@ class Profile(models.Model):
         choices=[('student', 'Student'), ('lecturer', 'Lecturer')]
     )  # Role of the user, limited to either 'student' or 'lecturer'.
 
+    university = models.CharField(
+        max_length=200, blank=True, default=''
+    )  # Name of the university (required for profile completion)
+    college = models.CharField(
+        max_length=200, blank=True, default=''
+    )  # Name of the college (required for profile completion)
+    school = models.CharField(
+        max_length=200, blank=True, default=''
+    )  # Name of the school (required for profile completion)
+
     def __str__(self):
         return f"{self.user.username} - {self.role}"  # String representation showing username and role.
 

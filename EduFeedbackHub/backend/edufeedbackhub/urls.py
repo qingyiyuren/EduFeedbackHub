@@ -77,4 +77,5 @@ urlpatterns = [
     path('api/visit-history/', views.visit_history_api, name='visit_history_api'),# Retrieve or submit visit history (GET/POST)
     # Teaching sentiment analysis (AI comment analysis)
     path('api/teaching/<int:teaching_id>/sentiment/', views.teaching_sentiment_api, name='teaching_sentiment_api'),
+    path('api/profile/', views.profile_api, name='profile_api'),  # Get or update current user's profile
 ]

@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.8] - 2025-07-31
+- Added profile support for both students and lecturers, allowing richer information display
+
 ## [0.1.7] - 2025-07-24
 
 ### Added

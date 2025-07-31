@@ -14,6 +14,8 @@ from ..models import *
 from django.utils import timezone
 from datetime import timedelta
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from django.views.decorators.http import require_http_methods
+import json
 
 
 # Useful for guiding users or tools to a meaningful starting point.
@@ -1071,3 +1073,54 @@ def visit_history_api(request):
     else:
         # Method not allowed
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "PUT"])
+def profile_api(request):
+    """
+    API endpoint to get or update the current user's profile information.
+    Supports GET (fetch profile) and PUT (update profile).
+    Returns/updates: first_name, last_name, university, college, school, role.
+    """
+    # --- User Authentication via Token ---
+    user = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            from rest_framework.authtoken.models import Token
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token.'}, status=401)
+    if not user:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+    if not hasattr(user, 'profile'):
+        return JsonResponse({'error': 'User profile not found.'}, status=404)
+    profile = user.profile
+
+    if request.method == 'GET':
+        # Return profile info
+        return JsonResponse({
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'university': getattr(profile, 'university', ''),
+            'college': getattr(profile, 'college', ''),
+            'school': getattr(profile, 'school', ''),
+            'role': profile.role,
+        })
+
+    if request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name = data.get('last_name', user.last_name)
+        for field in ['university', 'college', 'school']:
+            if field in data:
+                setattr(profile, field, data[field])
+        user.save()
+        profile.save()
+        return JsonResponse({'success': True})

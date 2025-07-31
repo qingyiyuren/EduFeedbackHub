@@ -1,6 +1,5 @@
 /**
- * This component allows users to access the home page and navigate to main features.
- * Quick search, rankings, and login/register links are provided.
+ * This component renders the user's profile page, enabling both viewing and editing of personal information.
  */
 import React from 'react';// Import React
 import {Link} from 'react-router-dom'; // Import router component
@@ -55,11 +54,17 @@ export default function HomePage() {
                 <div style={{marginBottom: 0}}>
                     {/* Guide: Register or log in to your account */}
                     <div style={{fontSize: '0.95em', color: '#555', marginBottom: 4}}>
-                        Register or log in to your account.
+                        {username ? 'View or edit your profile.' : 'Register or log in to your account.'}
                     </div>
-                    <Link to="/login">
-                        Register / Login
-                    </Link>
+                    {username ? (
+                        <Link to="/profile">
+                            Profile
+                        </Link>
+                    ) : (
+                        <Link to="/login">
+                            Register / Login
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>
