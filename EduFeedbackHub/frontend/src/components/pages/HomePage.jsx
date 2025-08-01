@@ -32,7 +32,7 @@ export default function HomePage() {
                 <div style={{marginBottom: 32}}>
                     {/* Guide: You can search or add lecturers, institutions, courses, and more. */}
                     <div style={{fontSize: '0.95em', color: '#555', marginBottom: 4}}>
-                        You can quickly search or add a new item (such as a university, course, or lecturer).
+                        You can quickly search or add a new item (such as a university, module, or lecturer).
                     </div>
                     <Link to="/search">
                         Quick Search & Add New Item

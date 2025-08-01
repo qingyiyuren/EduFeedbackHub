@@ -304,36 +304,7 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 </button>
             )}
 
-            {/* Quick search button for any level */}
-            <div style={{marginTop: '1rem'}}>
-                <button
-                    onClick={() => {
-                        const searchParams = new URLSearchParams();
-                        if (entityType === 'university') {
-                            searchParams.set('universityName', encodeURIComponent(entityData.name));
-                            searchParams.set('universityId', entityData.id);
-                        } else if (entityType === 'college') {
-                            searchParams.set('collegeName', encodeURIComponent(entityData.name));
-                            searchParams.set('collegeId', entityData.id);
-                            if (parentEntity) {
-                                searchParams.set('universityName', encodeURIComponent(parentEntity.name));
-                                searchParams.set('universityId', parentEntity.id);
-                            }
-                        } else if (entityType === 'school') {
-                            searchParams.set('schoolName', encodeURIComponent(entityData.name));
-                            searchParams.set('schoolId', entityData.id);
-                            if (parentEntity) {
-                                searchParams.set('collegeName', encodeURIComponent(parentEntity.name));
-                                searchParams.set('collegeId', parentEntity.id);
-                            }
-                        }
-                        navigate(`/search?${searchParams.toString()}`);
-                    }}
-                >
-                    Quick Search
-                </button>
 
-            </div>
 
             {/* Show module teaching records and form */}
             {entityType === 'module' && (
