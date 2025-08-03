@@ -77,5 +77,14 @@ urlpatterns = [
     path('api/visit-history/', views.visit_history_api, name='visit_history_api'),# Retrieve or submit visit history (GET/POST)
     # Teaching sentiment analysis (AI comment analysis)
     path('api/teaching/<int:teaching_id>/sentiment/', views.teaching_sentiment_api, name='teaching_sentiment_api'),
+    path('api/teaching/<int:teaching_id>/wordcloud/', views.teaching_wordcloud_api, name='teaching_wordcloud_api'),
     path('api/profile/', views.profile_api, name='profile_api'),  # Get or update current user's profile
+    
+    ## Notification APIs
+    path('api/notifications/', views.notifications_api, name='notifications_api'),  # Get and manage notifications
+    path('api/notifications/count/', views.unread_notifications_count_api, name='unread_notifications_count_api'),  # Get unread count
+    
+    ## Follow APIs
+    path('api/follow/', views.follow_api, name='follow_api'),  # Follow or unfollow an entity
+    path('api/follow/status/', views.follow_status_api, name='follow_status_api'),  # Check follow status
 ]

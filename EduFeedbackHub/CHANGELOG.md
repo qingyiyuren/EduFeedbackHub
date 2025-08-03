@@ -1,9 +1,21 @@
 # Changelog
 
-## [0.1.8] - 2025-07-31
+## [0.2.2] - 2025-08-03
+
+### Added
+
+- Introduced a global navigation bar for easier access across core pages
+- Implemented comment reply notifications: users now receive alerts when their comments are replied to and
+  replies in subscribed module pages
+- Added word cloud generation for feedback comments, enhancing data visualization and insight
+
+## [0.2.1] - 2025-07-31
+
+### Added
+
 - Added profile support for both students and lecturers, allowing richer information display
 
-## [0.1.7] - 2025-07-24
+## [0.2.0] - 2025-07-24
 
 ### Added
 

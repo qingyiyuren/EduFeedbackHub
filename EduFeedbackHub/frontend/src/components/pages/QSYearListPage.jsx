@@ -14,7 +14,7 @@ function QSYearListPage() {
         fetch('/api/years/')              // GET request to API endpoint
             .then((res) => res.json())   // Parse JSON response
             .then((data) => {
-                console.log('Fetched years:', data.years); // Debug log fetched years
+    
                 setYears(data.years);                      // Update state with years array
             })
             .catch((err) => console.error('Failed to load years:', err));  // Handle errors

@@ -26,7 +26,7 @@ export default function QuickSearchPage() {
     const [loading, setLoading] = useState(false);
     const [selectedLecturer, setSelectedLecturer] = useState(null);
     const [lecturerDetails, setLecturerDetails] = useState(null);
-    const [searched, setSearched] = useState(false); // 是否已提交搜索
+    const [searched, setSearched] = useState(false); // Whether search has been submitted
 
     // State for add form
     const [showAddForm, setShowAddForm] = useState(false);
@@ -693,7 +693,7 @@ export default function QuickSearchPage() {
             <div style={{marginTop: 24}}>
                 <h3>Search Results</h3>
                 {/* Removed the 'No lecturer found' error message for a cleaner UI */}
-                {/* 只显示 details 区域 */}
+                {/* Only show details area */}
             </div>
 
             {/* Lecturer Details */}

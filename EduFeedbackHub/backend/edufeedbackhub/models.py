@@ -252,3 +252,56 @@ class VisitHistory(models.Model):
 
     def __str__(self):
         return f"{self.user.username} visited {self.entity_type}:{self.entity_name} at {self.timestamp}"  # String representation
+
+
+class Notification(models.Model):
+    """
+    Stores notifications for users when their comments receive replies.
+    Each notification represents a reply to a user's comment.
+    """
+    recipient = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='notifications'
+    )  # The user who receives the notification (owner of the original comment)
+    
+    comment = models.ForeignKey(
+        Comment, on_delete=models.CASCADE, related_name='notifications'
+    )  # The original comment that received a reply
+    
+    reply = models.ForeignKey(
+        Comment, on_delete=models.CASCADE, related_name='notification_replies'
+    )  # The reply comment that triggered this notification
+    
+    is_read = models.BooleanField(default=False)  # Whether the notification has been read by the recipient
+    
+    created_at = models.DateTimeField(auto_now_add=True)  # When the notification was created
+    
+    class Meta:
+        ordering = ['-created_at']  # Most recent notifications first
+        unique_together = ('recipient', 'comment', 'reply')  # Prevent duplicate notifications
+    
+    def __str__(self):
+        return f"Notification for {self.recipient.username} about reply to comment {self.comment.id}"
+
+
+class Follow(models.Model):
+    """
+    Stores user follow relationships for entities.
+    Users can follow entities (university, college, school, module, lecturer, teaching)
+    to receive notifications about new comments and replies on those entities.
+    """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='follows'
+    )  # The user who is following the entity
+    
+    entity_type = models.CharField(max_length=32)  # Type of entity being followed (e.g., 'university', 'college', 'school', 'module', 'lecturer', 'teaching')
+    
+    entity_id = models.IntegerField()  # ID of the entity being followed
+    
+    created_at = models.DateTimeField(auto_now_add=True)  # When the follow relationship was created
+    
+    class Meta:
+        ordering = ['-created_at']  # Most recent follows first
+        unique_together = ('user', 'entity_type', 'entity_id')  # Prevent duplicate follows
+    
+    def __str__(self):
+        return f"{self.user.username} follows {self.entity_type}:{self.entity_id}"

@@ -14,14 +14,22 @@ each university, facilitating educational feedback and continuous improvement.
 - Seamless navigation experience preserving the current ranking year context after viewing detailed pages.  
 - AI-powered sentiment analysis for teaching record comments, offering insightful interpretation of feedback.  
 - User visit history feature enabling quick access to recently viewed entities and enhancing engagement.  
-- Student and lecturer profile pages, supporting rich personal and academic information display, improving user recognition and identity management.
+- Student and lecturer profile pages, supporting rich personal and academic information display, improving user recognition and identity management.  
+- Integrated notification system to alert users when their comments are replied to, including replies in subscribed module pages.  
+- New navigation bar added to improve page accessibility and user experience.  
+- Word cloud generation feature introduced to visualize key terms from comment data.
 
 
-## Technology Stack
 
-- Backend: Django
-- Frontend: React with Vite as the build tool
-- Database: SQLite
+##  Technology Stack
+
+- Backend: Django (Python 3.11+)
+- Frontend: React 19 + Vite
+- Database: SQLite (development environment; scalable to PostgreSQL)
+- Build Tools: Vite (frontend), Conda (Python virtual environment)
+- Version Control: Git
+- Other: AI modules (sentiment analysis using VADER, word cloud generation)
+
 
 ## Installation and Running
 

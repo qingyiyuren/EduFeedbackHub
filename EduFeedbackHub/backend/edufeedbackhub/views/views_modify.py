@@ -94,6 +94,47 @@ def add_comment_api(request):
         **{target_field: target_obj}
     )
 
+    # Create notifications for followers and comment authors
+    if parent:
+        # This is a reply - notify the parent comment's author
+        if parent.user and parent.user != user:
+            Notification.objects.get_or_create(
+                recipient=parent.user,
+                comment=parent,
+                reply=comment,
+                defaults={'is_read': False}
+            )
+        
+        # Notify followers about the reply
+        followers = Follow.objects.filter(
+            entity_type=target_field,
+            entity_id=target_obj.id
+        ).exclude(user=user)  # Exclude the reply author from notifications
+        
+        # Create notifications for each follower about the reply
+        for follow in followers:
+            Notification.objects.get_or_create(
+                recipient=follow.user,
+                comment=parent,
+                reply=comment,
+                defaults={'is_read': False}
+            )
+    else:
+        # This is a new comment - notify followers about the new comment
+        followers = Follow.objects.filter(
+            entity_type=target_field,
+            entity_id=target_obj.id
+        ).exclude(user=user)  # Exclude the comment author from notifications
+        
+        # Create notifications for each follower
+        for follow in followers:
+            Notification.objects.get_or_create(
+                recipient=follow.user,
+                comment=comment,
+                reply=comment,  # For new comments, reply is the same as comment
+                defaults={'is_read': False}
+            )
+
     # Return the newly created comment data as JSON
     return JsonResponse({
         'id': comment.id,
@@ -442,7 +483,8 @@ def register_api(request):
         return JsonResponse({'error': 'Username already exists'}, status=409)
 
     # Create a new user with the given username and password
-    user = User.objects.create_user(username=username, password=password)
+    # Use username as email since the system expects email for notifications
+    user = User.objects.create_user(username=username, email=username, password=password)
 
     # Create a related profile for the user with the specified role
     Profile.objects.create(user=user, role=role)

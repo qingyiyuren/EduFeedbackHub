@@ -8,6 +8,7 @@ import {useParams, Link, useLocation} from 'react-router-dom'; // Import router 
 import CommentSection from '../forms/CommentSection.jsx';
 import RatingComponent from '../forms/RatingComponent.jsx';
 import TeacherRatingTrendChart from '../forms/TeacherRatingTrendChart.jsx';
+import FollowButton from '../forms/FollowButton.jsx';
 
 // Custom hook to extract query parameters from the URL
 function useQuery() {
@@ -33,22 +34,50 @@ export default function TeachingDetailPage() {
     const [sentimentResult, setSentimentResult] = useState(null);
     const [sentimentLoading, setSentimentLoading] = useState(false);
     const [sentimentError, setSentimentError] = useState(null);
+    const [showSentiment, setShowSentiment] = useState(false); // Whether to show sentiment analysis
 
-    // Handler to fetch sentiment analysis for the current teaching record
+    // State for word cloud results and loading
+    const [wordcloudData, setWordcloudData] = useState(null);
+    const [wordcloudLoading, setWordcloudLoading] = useState(false);
+    const [wordcloudError, setWordcloudError] = useState(null);
+
+    // Handler to fetch AI analysis (sentiment + word cloud) for the current teaching record
     const handleAnalyzeSentiment = async () => {
         if (!teachingId) return;
         setSentimentLoading(true);
+        setWordcloudLoading(true);
         setSentimentError(null);
+        setWordcloudError(null);
         setSentimentResult(null);
+        setWordcloudData(null);
+        
         try {
-            const res = await fetch(`/api/teaching/${teachingId}/sentiment/`);
-            if (!res.ok) throw new Error('Failed to fetch sentiment analysis');
-            const data = await res.json();
-            setSentimentResult(data);
+            // Fetch both sentiment analysis and word cloud data in parallel
+            const [sentimentRes, wordcloudRes] = await Promise.all([
+                fetch(`/api/teaching/${teachingId}/sentiment/`),
+                fetch(`/api/teaching/${teachingId}/wordcloud/`)
+            ]);
+            
+            if (!sentimentRes.ok) throw new Error('Failed to fetch sentiment analysis');
+            if (!wordcloudRes.ok) throw new Error('Failed to fetch word cloud data');
+            
+            const [sentimentData, wordcloudData] = await Promise.all([
+                sentimentRes.json(),
+                wordcloudRes.json()
+            ]);
+            
+            setSentimentResult(sentimentData);
+            setWordcloudData(wordcloudData);
+            setShowSentiment(true); // Show AI analysis after successful fetch
         } catch (err) {
-            setSentimentError('Failed to analyze comments.');
+            if (err.message.includes('sentiment')) {
+                setSentimentError('Failed to analyze comments.');
+            } else {
+                setWordcloudError('Failed to generate word cloud.');
+            }
         } finally {
             setSentimentLoading(false);
+            setWordcloudLoading(false);
         }
     };
 
@@ -128,23 +157,27 @@ export default function TeachingDetailPage() {
                 )}
                 {/* AI Analyze Comments Button */}
                 <button
-                    onClick={handleAnalyzeSentiment}
+                    onClick={showSentiment ? () => setShowSentiment(false) : handleAnalyzeSentiment}
+                    disabled={sentimentLoading || wordcloudLoading}
                     style={{
                         backgroundColor: '#6c63ff',
                         color: 'white',
                         border: 'none',
                         borderRadius: 4,
                         padding: '8px 12px',
-                        cursor: 'pointer',
-                        marginLeft: 8
+                        cursor: (sentimentLoading || wordcloudLoading) ? 'not-allowed' : 'pointer',
+                        marginLeft: 8,
+                        opacity: (sentimentLoading || wordcloudLoading) ? 0.7 : 1
                     }}
                 >
-                    AI Analyze Comments
+                    {(sentimentLoading || wordcloudLoading) ? 'Analyzing...' : showSentiment ? 'Hide AI Analyze Comments' : 'View AI Analyze Comments'}
                 </button>
-                {/* Sentiment Analysis Result */}
-                {sentimentLoading && <div style={{marginTop: 12}}>Analyzing comments...</div>}
+                
+                {/* AI Analysis Loading and Error States */}
+                {(sentimentLoading || wordcloudLoading) && <div style={{marginTop: 12}}>Analyzing comments and generating word cloud...</div>}
                 {sentimentError && <div style={{marginTop: 12, color: 'red'}}>{sentimentError}</div>}
-                {sentimentResult && (
+                {wordcloudError && <div style={{marginTop: 12, color: 'red'}}>{wordcloudError}</div>}
+                {showSentiment && sentimentResult && (
                     <div style={{marginTop: 12, background: '#f4f6fa', borderRadius: 6, padding: 12}}>
                         <h4 style={{margin: 0, marginBottom: 6}}>AI Sentiment Analysis</h4>
                         <div style={{fontSize: 14, marginBottom: 6}}>
@@ -156,7 +189,6 @@ export default function TeachingDetailPage() {
                         </div>
                         {/* Optionally show per-comment sentiment breakdown */}
                         <details style={{fontSize: 13, marginTop: 6}}>
-
                             <summary>Show per-comment sentiment</summary>
                             <ul style={{margin: 0, paddingLeft: 18}}>
                                 {sentimentResult.comments.map(c => (
@@ -172,6 +204,116 @@ export default function TeachingDetailPage() {
                                     </li>
                                 ))}
                             </ul>
+                        </details>
+                    </div>
+                )}
+
+                {/* Word Cloud Display */}
+                {showSentiment && wordcloudData && (
+                    <div style={{marginTop: 12, background: '#f4f6fa', borderRadius: 6, padding: 12}}>
+                        <h4 style={{margin: 0, marginBottom: 12}}>Comment Word Cloud</h4>
+                        
+                        {/* Word Cloud Statistics */}
+                        <div style={{fontSize: 14, marginBottom: 12, color: '#666'}}>
+                            <strong>Comments analyzed:</strong> {wordcloudData.comment_count}<br/>
+                            <strong>Total words:</strong> {wordcloudData.total_words}<br/>
+                            <strong>Top keywords:</strong> {wordcloudData.wordcloud_data.length}
+                        </div>
+
+                        {/* Word Cloud Visualization */}
+                        <div style={{
+                            position: 'relative',
+                            width: '100%',
+                            height: '200px',
+                            background: 'white',
+                            borderRadius: '4px',
+                            border: '1px solid #e0e0e0',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '10px'
+                        }}>
+                            {wordcloudData.wordcloud_data.length > 0 ? (
+                                wordcloudData.wordcloud_data.map((word, index) => {
+                                    const position = {
+                                        x: 15 + Math.random() * 70, // 15-85% of container width (avoid edges)
+                                        y: 15 + Math.random() * 70, // 15-85% of container height (avoid edges)
+                                        rotation: (Math.random() - 0.5) * 90 // -45 to 45 degrees
+                                    };
+                                    const colors = [
+                                        '#1976d2', '#388e3c', '#f57c00', '#d32f2f', 
+                                        '#7b1fa2', '#303f9f', '#c2185b', '#5d4037',
+                                        '#455a64', '#ff6f00', '#4caf50', '#2196f3'
+                                    ];
+                                    const color = colors[Math.floor(Math.random() * colors.length)];
+                                    
+                                    return (
+                                        <span
+                                            key={index}
+                                            style={{
+                                                position: 'absolute',
+                                                left: `${position.x}%`,
+                                                top: `${position.y}%`,
+                                                transform: `translate(-50%, -50%) rotate(${position.rotation}deg)`,
+                                                fontSize: `${word.size}px`,
+                                                fontWeight: 'bold',
+                                                color: color,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                userSelect: 'none',
+                                                textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.transform = `translate(-50%, -50%) rotate(${position.rotation}deg) scale(1.1)`;
+                                                e.target.style.zIndex = '10';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.transform = `translate(-50%, -50%) rotate(${position.rotation}deg) scale(1)`;
+                                                e.target.style.zIndex = '1';
+                                            }}
+                                            title={`"${word.text}" appears ${word.value} times`}
+                                        >
+                                            {word.text}
+                                        </span>
+                                    );
+                                })
+                            ) : (
+                                <div style={{ color: '#999', fontSize: '16px' }}>
+                                    No keywords found in comments
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Word Frequency Table */}
+                        <details style={{ marginTop: '12px' }}>
+                            <summary style={{ cursor: 'pointer', color: '#1976d2', fontWeight: '500' }}>
+                                Show word frequency table
+                            </summary>
+                            <div style={{ marginTop: '8px' }}>
+                                <table style={{
+                                    width: '100%',
+                                    borderCollapse: 'collapse',
+                                    fontSize: '13px'
+                                }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '1px solid #e0e0e0' }}>
+                                            <th style={{ textAlign: 'left', padding: '8px', fontWeight: '600' }}>Word</th>
+                                            <th style={{ textAlign: 'center', padding: '8px', fontWeight: '600' }}>Frequency</th>
+                                            <th style={{ textAlign: 'center', padding: '8px', fontWeight: '600' }}>Size</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {wordcloudData.wordcloud_data.map((word, index) => (
+                                            <tr key={index} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                                                <td style={{ padding: '6px 8px', fontWeight: '500' }}>{word.text}</td>
+                                                <td style={{ padding: '6px 8px', textAlign: 'center' }}>{word.value}</td>
+                                                <td style={{ padding: '6px 8px', textAlign: 'center' }}>{word.size}px</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </details>
                     </div>
                 )}
@@ -215,6 +357,12 @@ export default function TeachingDetailPage() {
                 count={ratingData.count}
                 userRole={userRole}
                 onRatingChange={handleRatingChange}
+            />
+
+            {/* Follow Button */}
+            <FollowButton
+                entityType="teaching"
+                entityId={parseInt(teachingId, 10)}
             />
 
             {/* Navigation links */}

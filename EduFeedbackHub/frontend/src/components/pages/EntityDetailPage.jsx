@@ -7,6 +7,7 @@ import React, {useEffect, useState} from 'react'; // Import React and hooks
 import {useParams, Link, useLocation, useNavigate} from 'react-router-dom'; // Import router hooks and components
 import CommentSection from '../forms/CommentSection.jsx';
 import RatingComponent from '../forms/RatingComponent.jsx';
+import FollowButton from '../forms/FollowButton.jsx';
 
 // Configuration for each entity type (used for routing, labels, hierarchy)
 const entityConfig = {
@@ -267,6 +268,12 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 count={ratingData.count}
                 userRole={userRole}
                 onRatingChange={handleRatingChange}
+            />
+
+            {/* Follow Button */}
+            <FollowButton
+                entityType={entityType}
+                entityId={parseInt(entityId, 10)}
             />
 
             {/* Return to ranking page if came from one */}

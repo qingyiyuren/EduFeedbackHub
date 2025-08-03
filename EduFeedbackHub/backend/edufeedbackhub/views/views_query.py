@@ -876,6 +876,79 @@ def teaching_sentiment_api(request, teaching_id):
     })
 
 
+@require_GET
+def teaching_wordcloud_api(request, teaching_id):
+    """
+    Generate word cloud data from all comments for a given teaching record.
+    Returns word frequency data for visualization using simple text processing.
+    """
+    import re
+    from collections import Counter
+    
+    # Get the Teaching object by ID or return 404 if not found
+    teaching = get_object_or_404(Teaching, id=teaching_id)
+    
+    # Get all comments linked to this teaching (including replies)
+    comments = Comment.objects.filter(teaching=teaching)
+    
+    # Combine all comment text
+    all_text = ' '.join([comment.content or '' for comment in comments])
+    
+    # Clean and tokenize text using simple regex
+    # Remove special characters and convert to lowercase
+    cleaned_text = re.sub(r'[^\w\s]', '', all_text.lower())
+    
+    # Split into words
+    words = cleaned_text.split()
+    
+    # Define common stop words to exclude from word cloud
+    stop_words = {
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+        'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+        'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those',
+        'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+        'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'his', 'hers', 'ours', 'theirs',
+        'very', 'really', 'quite', 'just', 'only', 'also', 'too', 'so', 'as', 'than', 'more', 'most',
+        # Keep evaluation words to show sentiment patterns
+        # 'good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'terrible', 'bad', 'awful',
+        'like', 'love', 'hate', 'enjoy', 'dislike', 'think', 'feel', 'know', 'see', 'look', 'get', 'go',
+        'come', 'make', 'take', 'give', 'say', 'tell', 'ask', 'want', 'need', 'use', 'work', 'study',
+        'learn', 'teach', 'help', 'understand', 'explain', 'show', 'find', 'try', 'start', 'stop',
+        'well', 'much', 'many', 'some', 'any', 'all', 'every', 'each', 'both', 'either', 'neither',
+        'first', 'last', 'next', 'previous', 'current', 'new', 'old', 'young', 'big', 'small', 'high', 'low',
+        'easy', 'hard', 'difficult', 'simple', 'complex', 'important', 'interesting', 'boring', 'fun',
+        'nice', 'kind', 'friendly', 'helpful', 'patient', 'clear', 'organized', 'structured', 'logical'
+    }
+    
+    # Filter words: remove stop words and short words
+    filtered_words = [word for word in words if word not in stop_words and len(word) > 2]
+    
+    # Count word frequencies
+    word_freq = Counter(filtered_words)
+    
+    # Get top 30 most frequent words
+    top_words = word_freq.most_common(30)
+    
+    # Format data for word cloud visualization
+    wordcloud_data = [
+        {
+            'text': word,
+            'value': freq,
+            'size': min(16 + freq * 3, 50)  # Scale font size based on frequency
+        }
+        for word, freq in top_words
+    ]
+    
+    return JsonResponse({
+        'teaching_id': teaching.id,
+        'lecturer_name': teaching.lecturer.name,
+        'module_name': teaching.module.name,
+        'comment_count': len(comments),
+        'wordcloud_data': wordcloud_data,
+        'total_words': len(filtered_words)
+    })
+
+
 @csrf_exempt
 def quick_search_api(request):
     """Perform a quick search across all entity types."""
@@ -1124,3 +1197,241 @@ def profile_api(request):
         user.save()
         profile.save()
         return JsonResponse({'success': True})
+
+
+@csrf_exempt
+@require_http_methods(["GET", "PUT"])
+def notifications_api(request):
+    """
+    API endpoint to get user notifications and mark them as read.
+    GET: Returns all notifications for the current user.
+    PUT: Marks specified notifications as read.
+    """
+    # User authentication via token
+    user = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            from rest_framework.authtoken.models import Token
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token.'}, status=401)
+    if not user:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+
+    if request.method == 'GET':
+        # Get all notifications for the user, ordered by most recent first
+        notifications = Notification.objects.filter(recipient=user).order_by('-created_at')
+        
+        # Serialize notifications for JSON response
+        data = []
+        for notification in notifications:
+            # Get the target entity information for the original comment
+            target_info = notification.comment.target_object()
+            
+            # Extract entity type and ID for creating links
+            entity_type = None
+            entity_id = None
+            
+            # Check which entity field is set and get its ID
+            for field in ['university', 'college', 'school', 'module', 'lecturer', 'teaching']:
+                obj = getattr(notification.comment, field)
+                if obj:
+                    entity_type = field
+                    entity_id = obj.id
+                    break
+            
+            # Determine if this is a follow notification or reply notification
+            is_follow_notification = notification.comment.id == notification.reply.id
+            
+            data.append({
+                'id': notification.id,
+                'is_read': notification.is_read,
+                'created_at': notification.created_at.isoformat(),
+                'is_follow_notification': is_follow_notification,
+                'original_comment': {
+                    'id': notification.comment.id,
+                    'content': notification.comment.content[:100] + '...' if len(notification.comment.content) > 100 else notification.comment.content,
+                    'target': target_info,
+                    'entity_type': entity_type,
+                    'entity_id': entity_id,
+                },
+                'reply': {
+                    'id': notification.reply.id,
+                    'content': notification.reply.content[:100] + '...' if len(notification.reply.content) > 100 else notification.reply.content,
+                    'user': notification.reply.user.email if notification.reply.user and not notification.reply.is_anonymous else 'Anonymous',
+                    'created_at': notification.reply.created_at.isoformat(),
+                }
+            })
+        
+        return JsonResponse({
+            'notifications': data,
+            'unread_count': notifications.filter(is_read=False).count()
+        })
+
+    if request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        
+        # Mark notifications as read
+        notification_ids = data.get('notification_ids', [])
+        if notification_ids:
+            Notification.objects.filter(
+                id__in=notification_ids,
+                recipient=user
+            ).update(is_read=True)
+        
+        return JsonResponse({'success': True})
+
+
+@require_GET
+def unread_notifications_count_api(request):
+    """
+    API endpoint to get the count of unread notifications for the current user.
+    Used for displaying notification badge in the navigation bar.
+    """
+    # User authentication via token
+    user = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            from rest_framework.authtoken.models import Token
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token.'}, status=401)
+    if not user:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+
+    # Count unread notifications
+    unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
+    
+    return JsonResponse({'unread_count': unread_count})
+
+
+@csrf_exempt
+@require_http_methods(["POST", "DELETE"])
+def follow_api(request):
+    """
+    API endpoint to follow or unfollow an entity.
+    POST: Follow an entity
+    DELETE: Unfollow an entity
+    """
+    # User authentication via token
+    user = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            from rest_framework.authtoken.models import Token
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token.'}, status=401)
+    if not user:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+
+    # Parse request data
+    try:
+        data = json.loads(request.body)
+        entity_type = data.get('entity_type')
+        entity_id = data.get('entity_id')
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+
+    # Validate required fields
+    if not entity_type or not entity_id:
+        return JsonResponse({'error': 'entity_type and entity_id are required.'}, status=400)
+
+    # Validate entity_type
+    valid_entity_types = ['university', 'college', 'school', 'module', 'lecturer', 'teaching']
+    if entity_type not in valid_entity_types:
+        return JsonResponse({'error': 'Invalid entity_type.'}, status=400)
+
+    # Validate entity_id is a positive integer
+    try:
+        entity_id = int(entity_id)
+        if entity_id <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'entity_id must be a positive integer.'}, status=400)
+
+    if request.method == 'POST':
+        # Follow the entity
+        follow, created = Follow.objects.get_or_create(
+            user=user,
+            entity_type=entity_type,
+            entity_id=entity_id
+        )
+        if created:
+            return JsonResponse({'success': True, 'action': 'followed'})
+        else:
+            return JsonResponse({'success': True, 'action': 'already_following'})
+    
+    elif request.method == 'DELETE':
+        # Unfollow the entity
+        try:
+            follow = Follow.objects.get(
+                user=user,
+                entity_type=entity_type,
+                entity_id=entity_id
+            )
+            follow.delete()
+            return JsonResponse({'success': True, 'action': 'unfollowed'})
+        except Follow.DoesNotExist:
+            return JsonResponse({'success': True, 'action': 'not_following'})
+
+
+@require_GET
+def follow_status_api(request):
+    """
+    API endpoint to check if a user is following a specific entity.
+    """
+    # User authentication via token
+    user = None
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Token '):
+        token_key = auth_header.split(' ', 1)[1]
+        try:
+            from rest_framework.authtoken.models import Token
+            token_obj = Token.objects.get(key=token_key)
+            user = token_obj.user
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token.'}, status=401)
+    if not user:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+
+    # Get query parameters
+    entity_type = request.GET.get('entity_type')
+    entity_id = request.GET.get('entity_id')
+
+    # Validate required fields
+    if not entity_type or not entity_id:
+        return JsonResponse({'error': 'entity_type and entity_id are required.'}, status=400)
+
+    # Validate entity_type
+    valid_entity_types = ['university', 'college', 'school', 'module', 'lecturer', 'teaching']
+    if entity_type not in valid_entity_types:
+        return JsonResponse({'error': 'Invalid entity_type.'}, status=400)
+
+    # Validate entity_id is a positive integer
+    try:
+        entity_id = int(entity_id)
+        if entity_id <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'entity_id must be a positive integer.'}, status=400)
+
+    # Check if user is following the entity
+    is_following = Follow.objects.filter(
+        user=user,
+        entity_type=entity_type,
+        entity_id=entity_id
+    ).exists()
+
+    return JsonResponse({'is_following': is_following})
