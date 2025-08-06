@@ -40,43 +40,46 @@ export default function TeachingDetailPage() {
     const [wordcloudData, setWordcloudData] = useState(null);
     const [wordcloudLoading, setWordcloudLoading] = useState(false);
     const [wordcloudError, setWordcloudError] = useState(null);
+    const [showWordcloud, setShowWordcloud] = useState(false); // Whether to show word cloud
 
-    // Handler to fetch AI analysis (sentiment + word cloud) for the current teaching record
+    // Handler to fetch AI sentiment analysis for the current teaching record
     const handleAnalyzeSentiment = async () => {
         if (!teachingId) return;
         setSentimentLoading(true);
-        setWordcloudLoading(true);
         setSentimentError(null);
-        setWordcloudError(null);
         setSentimentResult(null);
+        
+        try {
+            const sentimentRes = await fetch(`/api/teaching/${teachingId}/sentiment/`);
+            if (!sentimentRes.ok) throw new Error('Failed to fetch sentiment analysis');
+            
+            const sentimentData = await sentimentRes.json();
+            setSentimentResult(sentimentData);
+            setShowSentiment(true); // Show AI analysis after successful fetch
+        } catch (err) {
+            setSentimentError('Failed to analyze comments.');
+        } finally {
+            setSentimentLoading(false);
+        }
+    };
+
+    // Handler to fetch word cloud data for the current teaching record
+    const handleGenerateWordcloud = async () => {
+        if (!teachingId) return;
+        setWordcloudLoading(true);
+        setWordcloudError(null);
         setWordcloudData(null);
         
         try {
-            // Fetch both sentiment analysis and word cloud data in parallel
-            const [sentimentRes, wordcloudRes] = await Promise.all([
-                fetch(`/api/teaching/${teachingId}/sentiment/`),
-                fetch(`/api/teaching/${teachingId}/wordcloud/`)
-            ]);
-            
-            if (!sentimentRes.ok) throw new Error('Failed to fetch sentiment analysis');
+            const wordcloudRes = await fetch(`/api/teaching/${teachingId}/wordcloud/`);
             if (!wordcloudRes.ok) throw new Error('Failed to fetch word cloud data');
             
-            const [sentimentData, wordcloudData] = await Promise.all([
-                sentimentRes.json(),
-                wordcloudRes.json()
-            ]);
-            
-            setSentimentResult(sentimentData);
+            const wordcloudData = await wordcloudRes.json();
             setWordcloudData(wordcloudData);
-            setShowSentiment(true); // Show AI analysis after successful fetch
+            setShowWordcloud(true); // Show word cloud after successful fetch
         } catch (err) {
-            if (err.message.includes('sentiment')) {
-                setSentimentError('Failed to analyze comments.');
-            } else {
-                setWordcloudError('Failed to generate word cloud.');
-            }
+            setWordcloudError('Failed to generate word cloud.');
         } finally {
-            setSentimentLoading(false);
             setWordcloudLoading(false);
         }
     };
@@ -151,30 +154,60 @@ export default function TeachingDetailPage() {
 
                 {/* Toggle button to show/hide rating trend chart */}
                 {teachingData.lecturer_id && (
-                    <button onClick={() => setShowTrend(v => !v)} style={{marginBottom: '0.5rem', marginRight: 8}}>
+                    <button 
+                        onClick={() => setShowTrend(v => !v)} 
+                        style={{
+                            backgroundColor: '#1976d2',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: 4,
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            marginBottom: '0.5rem',
+                            marginRight: 8
+                        }}
+                    >
                         {showTrend ? 'Hide Rating Trend' : 'View Rating Trend'}
                     </button>
                 )}
                 {/* AI Analyze Comments Button */}
                 <button
                     onClick={showSentiment ? () => setShowSentiment(false) : handleAnalyzeSentiment}
-                    disabled={sentimentLoading || wordcloudLoading}
+                    disabled={sentimentLoading}
                     style={{
                         backgroundColor: '#6c63ff',
                         color: 'white',
                         border: 'none',
                         borderRadius: 4,
                         padding: '8px 12px',
-                        cursor: (sentimentLoading || wordcloudLoading) ? 'not-allowed' : 'pointer',
+                        cursor: sentimentLoading ? 'not-allowed' : 'pointer',
                         marginLeft: 8,
-                        opacity: (sentimentLoading || wordcloudLoading) ? 0.7 : 1
+                        opacity: sentimentLoading ? 0.7 : 1
                     }}
                 >
-                    {(sentimentLoading || wordcloudLoading) ? 'Analyzing...' : showSentiment ? 'Hide AI Analyze Comments' : 'View AI Analyze Comments'}
+                    {sentimentLoading ? 'Analyzing...' : showSentiment ? 'Hide AI Analyze Comments' : 'View AI Analyze Comments'}
+                </button>
+                {/* Word Cloud Button */}
+                <button
+                    onClick={showWordcloud ? () => setShowWordcloud(false) : handleGenerateWordcloud}
+                    disabled={wordcloudLoading}
+                    style={{
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 4,
+                        padding: '8px 12px',
+                        cursor: wordcloudLoading ? 'not-allowed' : 'pointer',
+                        marginLeft: 8,
+                        opacity: wordcloudLoading ? 0.7 : 1
+                    }}
+                >
+                    {wordcloudLoading ? 'Generating...' : showWordcloud ? 'Hide Word Cloud' : 'View Word Cloud'}
                 </button>
                 
                 {/* AI Analysis Loading and Error States */}
-                {(sentimentLoading || wordcloudLoading) && <div style={{marginTop: 12}}>Analyzing comments and generating word cloud...</div>}
+                {sentimentLoading && <div style={{marginTop: 12}}>Analyzing comments...</div>}
+                {wordcloudLoading && <div style={{marginTop: 12}}>Generating word cloud...</div>}
                 {sentimentError && <div style={{marginTop: 12, color: 'red'}}>{sentimentError}</div>}
                 {wordcloudError && <div style={{marginTop: 12, color: 'red'}}>{wordcloudError}</div>}
                 {showSentiment && sentimentResult && (
@@ -209,7 +242,7 @@ export default function TeachingDetailPage() {
                 )}
 
                 {/* Word Cloud Display */}
-                {showSentiment && wordcloudData && (
+                {showWordcloud && wordcloudData && (
                     <div style={{marginTop: 12, background: '#f4f6fa', borderRadius: 6, padding: 12}}>
                         <h4 style={{margin: 0, marginBottom: 12}}>Comment Word Cloud</h4>
                         
