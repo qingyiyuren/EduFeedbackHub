@@ -1,5 +1,13 @@
 # Changelog
 
+
+## [0.2.3] - 2025-08-08
+
+### Added
+
+- Intelligent capitalization for proper nouns.
+
+
 ## [0.2.2] - 2025-08-03
 
 ### Added

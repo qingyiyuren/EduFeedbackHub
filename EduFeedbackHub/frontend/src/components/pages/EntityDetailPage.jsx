@@ -8,6 +8,7 @@ import {useParams, Link, useLocation, useNavigate} from 'react-router-dom'; // I
 import CommentSection from '../forms/CommentSection.jsx';
 import RatingComponent from '../forms/RatingComponent.jsx';
 import FollowButton from '../forms/FollowButton.jsx';
+import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Configuration for each entity type (used for routing, labels, hierarchy)
 const entityConfig = {
@@ -108,19 +109,19 @@ export default function EntityDetailPage({entityType = 'university'}) {
         const token = localStorage.getItem('token');
         if (token && entityData && entityData.name) {
             // Compose a hierarchical name for visit history
-            let hierarchicalName = entityData.name;
+            let hierarchicalName = formatEntityName(entityData.name);
             if (entityType === 'college' && entityData.university) {
-                hierarchicalName = `${entityData.university.name} - ${entityData.name}`;
+                hierarchicalName = `${formatEntityName(entityData.university.name)} - ${formatEntityName(entityData.name)}`;
             } else if (entityType === 'school' && entityData.college && entityData.college.university) {
-                hierarchicalName = `${entityData.college.university.name} - ${entityData.college.name} - ${entityData.name}`;
+                hierarchicalName = `${formatEntityName(entityData.college.university.name)} - ${formatEntityName(entityData.college.name)} - ${formatEntityName(entityData.name)}`;
             } else if (entityType === 'school' && entityData.college) {
-                hierarchicalName = `${entityData.college.name} - ${entityData.name}`;
+                hierarchicalName = `${formatEntityName(entityData.college.name)} - ${formatEntityName(entityData.name)}`;
             } else if (entityType === 'module' && entityData.school && entityData.school.college && entityData.school.college.university) {
-                hierarchicalName = `${entityData.school.college.university.name} - ${entityData.school.college.name} - ${entityData.school.name} - ${entityData.name}`;
+                hierarchicalName = `${formatEntityName(entityData.school.college.university.name)} - ${formatEntityName(entityData.school.college.name)} - ${formatEntityName(entityData.school.name)} - ${formatEntityName(entityData.name)}`;
             } else if (entityType === 'module' && entityData.school && entityData.school.college) {
-                hierarchicalName = `${entityData.school.college.name} - ${entityData.school.name} - ${entityData.name}`;
+                hierarchicalName = `${formatEntityName(entityData.school.college.name)} - ${formatEntityName(entityData.school.name)} - ${formatEntityName(entityData.name)}`;
             } else if (entityType === 'module' && entityData.school) {
-                hierarchicalName = `${entityData.school.name} - ${entityData.name}`;
+                hierarchicalName = `${formatEntityName(entityData.school.name)} - ${formatEntityName(entityData.name)}`;
             }
             fetch('/api/visit-history/', {
                 method: 'POST',
@@ -226,39 +227,39 @@ export default function EntityDetailPage({entityType = 'university'}) {
             {/* Render full hierarchy for school */}
             {entityType === 'school' && entityData.college?.university && (
                 <div style={{marginBottom: '1rem'}}>
-                    <h3>{entityData.college.university.name} {entityData.college.university.region && `(${entityData.college.university.region})`}</h3>
-                    <h3>{entityData.college.name}</h3>
-                    <h2>{entityData.name}</h2>
+                    <h3>{formatEntityName(entityData.college.university.name)} {entityData.college.university.region && `(${entityData.college.university.region})`}</h3>
+                    <h3>{formatEntityName(entityData.college.name)}</h3>
+                    <h2>{formatEntityName(entityData.name)}</h2>
                 </div>
             )}
 
             {/* College under university */}
             {entityType === 'college' && parentEntity && (
                 <div style={{marginBottom: '1rem'}}>
-                    <h3>{parentEntity.name} {parentEntity.region && `(${parentEntity.region})`}</h3>
-                    <h2>{entityData.name}</h2>
+                    <h3>{formatEntityName(parentEntity.name)} {parentEntity.region && `(${parentEntity.region})`}</h3>
+                    <h2>{formatEntityName(entityData.name)}</h2>
                 </div>
             )}
 
             {/* University only */}
             {entityType === 'university' && (
-                <h2>{entityData.name} {entityData.region && `(${entityData.region})`}</h2>
+                <h2>{formatEntityName(entityData.name)} {entityData.region && `(${entityData.region})`}</h2>
             )}
 
             {/* Module full hierarchy */}
             {entityType === 'module' && entityData.school?.college?.university && (
                 <div style={{marginBottom: '1rem'}}>
-                    <h3>{entityData.school.college.university.name} {entityData.school.college.university.region && `(${entityData.school.college.university.region})`}</h3>
-                    <h3>{entityData.school.college.name}</h3>
-                    <h3>{entityData.school.name}</h3>
-                    <h2>{entityData.name}</h2>
+                    <h3>{formatEntityName(entityData.school.college.university.name)} {entityData.school.college.university.region && `(${entityData.school.college.university.region})`}</h3>
+                    <h3>{formatEntityName(entityData.school.college.name)}</h3>
+                    <h3>{formatEntityName(entityData.school.name)}</h3>
+                    <h2>{formatEntityName(entityData.name)}</h2>
                 </div>
             )}
             {/* Module with partial hierarchy */}
             {entityType === 'module' && entityData.school && (!entityData.school.college || !entityData.school.college.university) && (
-                <div><h3>{entityData.school.name}</h3><h2>{entityData.name}</h2></div>
+                <div><h3>{formatEntityName(entityData.school.name)}</h3><h2>{formatEntityName(entityData.name)}</h2></div>
             )}
-            {entityType === 'module' && !entityData.school && <h2>{entityData.name}</h2>}
+            {entityType === 'module' && !entityData.school && <h2>{formatEntityName(entityData.name)}</h2>}
 
             {/* Rating Component */}
             <RatingComponent
@@ -281,13 +282,13 @@ export default function EntityDetailPage({entityType = 'university'}) {
 
             {/* Back links to parent entities */}
             {entityType === 'school' && entityData.college && (
-                <p><Link to={`/college/${entityData.college.id}`}>Back to {entityData.college.name}</Link></p>
+                <p><Link to={`/college/${entityData.college.id}`}>Back to {formatEntityName(entityData.college.name)}</Link></p>
             )}
             {entityType === 'college' && parentEntity && (
-                <p><Link to={`/university/${parentEntity.id}`}>Back to {parentEntity.name}</Link></p>
+                <p><Link to={`/university/${parentEntity.id}`}>Back to {formatEntityName(parentEntity.name)}</Link></p>
             )}
             {entityType === 'module' && entityData.school && (
-                <p><Link to={`/school/${entityData.school.id}`}>Back to {entityData.school.name}</Link></p>
+                <p><Link to={`/school/${entityData.school.id}`}>Back to {formatEntityName(entityData.school.name)}</Link></p>
             )}
 
             <p><Link to="/">Back to Home</Link></p>

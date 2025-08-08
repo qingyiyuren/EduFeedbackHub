@@ -5,6 +5,7 @@
 
 import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
 import {useNavigate} from 'react-router-dom'; // Import router hook
+import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Configuration of API endpoints, display names, parent relations, and region requirement for each entity type
 const entityConfig = {
@@ -403,7 +404,8 @@ export default function EntityAddForm({
                                     cursor: 'pointer',
                                 }}
                             >
-                                {item.name}{finalRequireRegion && item.region ? ` (${item.region})` : ''}
+                                {formatEntityName(item.name)}
+                                {finalRequireRegion && item.region ? ` (${item.region})` : ''}
                             </li>
                         ))}
                     </ul>
@@ -466,7 +468,7 @@ export default function EntityAddForm({
                 <p style={{color: 'red'}}>
                     This {config.displayName.toLowerCase()} already exists:{' '}
                     <a href={`/${entityType}/${existingEntity.id}`} style={{ color: '#1976d2', textDecoration: 'underline' }}>
-                        {existingEntity.name}
+                        {formatEntityName(existingEntity.name)}
                         {finalRequireRegion && existingEntity.region ? ` (${existingEntity.region})` : ''}
                     </a>
                 </p>

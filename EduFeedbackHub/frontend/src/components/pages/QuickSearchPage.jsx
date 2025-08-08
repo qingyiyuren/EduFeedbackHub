@@ -8,6 +8,7 @@ import {useLocation, Link, useNavigate} from 'react-router-dom'; // Import route
 import EntitySearchInput from '../forms/EntitySearchInput.jsx';
 import EntityAddForm from '../forms/EntityAddForm.jsx';
 import TeacherRatingTrendChart from '../forms/TeacherRatingTrendChart.jsx';
+import { formatEntityName, formatPersonName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 export default function QuickSearchPage() {
     const location = useLocation();
@@ -346,7 +347,11 @@ export default function QuickSearchPage() {
                                         }}
                                     >
                                         <span
-                                            style={{fontWeight: 500}}>{record.entityType.charAt(0).toUpperCase() + record.entityType.slice(1)}:</span> {record.entityName}
+                                            style={{fontWeight: 500}}>{record.entityType.charAt(0).toUpperCase() + record.entityType.slice(1)}:</span> {
+                                            record.entityType === 'lecturer' || record.entityType === 'teaching' 
+                                                ? formatPersonName(record.entityName)
+                                                : formatEntityName(record.entityName)
+                                        }
                                         <span style={{color: '#aaa', marginLeft: 8, fontSize: 11}}>
                                             {/* Show the visit time in local format */}
                                             {record.timestamp ? new Date(record.timestamp).toLocaleString() : ''}
@@ -488,7 +493,7 @@ export default function QuickSearchPage() {
                     />
                     {selectedUniversity && (
                         <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
-                            Selected: {selectedUniversity.name}
+                            Selected: {formatEntityName(selectedUniversity.name)}
                         </div>
                     )}
                 </div>
@@ -537,7 +542,7 @@ export default function QuickSearchPage() {
                         />
                         {selectedCollege && (
                             <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
-                                Selected: {selectedCollege.name}
+                                Selected: {formatEntityName(selectedCollege.name)}
                             </div>
                         )}
                     </div>
@@ -591,7 +596,7 @@ export default function QuickSearchPage() {
                         />
                         {selectedSchool && (
                             <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
-                                Selected: {selectedSchool.name}
+                                Selected: {formatEntityName(selectedSchool.name)}
                             </div>
                         )}
                     </div>
@@ -641,7 +646,7 @@ export default function QuickSearchPage() {
                         />
                         {selectedModule && (
                             <div style={{marginTop: '5px', fontSize: '14px', color: '#666'}}>
-                                Selected: {selectedModule.name}
+                                Selected: {formatEntityName(selectedModule.name)}
                             </div>
                         )}
                     </div>
@@ -704,7 +709,7 @@ export default function QuickSearchPage() {
                     borderRadius: '8px',
                     backgroundColor: '#f8f9fa'
                 }}>
-                    <h3>Lecturer Details: {lecturerDetails.name}</h3>
+                    <h3>Lecturer Details: {formatPersonName(lecturerDetails.name)}</h3>
                     {/* Show current filter description below the title */}
                     <div style={{color: '#888', marginBottom: 8}}>
                         {getFilterDesc()}
@@ -766,10 +771,10 @@ export default function QuickSearchPage() {
                                                 borderRadius: '4px'
                                             }}>
                                                 <div style={{fontWeight: 'bold'}}>
-                                                    {record.module_name}
+                                                    {formatEntityName(record.module_name)}
                                                 </div>
                                                 <div style={{color: '#666', fontSize: '14px'}}>
-                                                    School: {record.school_name} → {record.college_name} → {record.university_name}
+                                                    School: {formatEntityName(record.school_name)} → {formatEntityName(record.college_name)} → {formatEntityName(record.university_name)}
                                                 </div>
                                                 <div style={{display: 'flex', gap: '20px', marginTop: '5px'}}>
                                                     <span>
@@ -824,7 +829,7 @@ export default function QuickSearchPage() {
                             alignItems: 'center',
                             marginBottom: '20px'
                         }}>
-                            <h2>Add New {addFormEntityType.charAt(0).toUpperCase() + addFormEntityType.slice(1)}</h2>
+                            <h2>Add New {formatEntityName(addFormEntityType.charAt(0).toUpperCase() + addFormEntityType.slice(1))}</h2>
                             <button
                                 onClick={() => setShowAddForm(false)}
                                 style={{

@@ -4,6 +4,7 @@
  */
 import React, { useState } from 'react'; // Import React and useState hook
 import CommentForm from './CommentForm.jsx';
+import { formatPersonName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 export default function CommentList({
     comments,         // Array of comment objects
@@ -73,7 +74,7 @@ export default function CommentList({
                     ? <span style={{ marginLeft: 8, color: '#888' }}>— Anonymous User</span>
                     : comment.username && (
                         <span style={{ marginLeft: 8, color: '#1976d2', fontWeight: 500 }}>
-                            — {comment.username}
+                            — {formatPersonName(comment.username)}
                             {comment.role && (
                                 <span style={{
                                     display: 'inline-block',

@@ -4,6 +4,7 @@
  */
 import React, {useEffect, useState} from 'react'; // Import React and hooks
 import {Link, useParams} from 'react-router-dom'; // Import router hooks and components
+import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 export default function QSYearDetailPage() {
     const {year} = useParams();  // Get the "year" parameter from the URL (e.g., /rankings/2024)
@@ -50,7 +51,7 @@ export default function QSYearDetailPage() {
                         {/* University name links to detail page, passing year as query param */}
                         <td style={{padding: '8px'}}>
                             <Link to={`/university/${ranking.university.id}?fromYear=${year}`}>
-                                {ranking.university.name}
+                                {formatEntityName(ranking.university.name)}
                             </Link>
                         </td>
 

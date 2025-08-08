@@ -6,6 +6,7 @@ import React, {useState} from 'react'; // Import React and useState hook
 import {Link, useNavigate, useLocation} from 'react-router-dom'; // Import router hooks and components
 import EntitySearchInput from '../forms/EntitySearchInput.jsx';
 import EntityAddForm from '../forms/EntityAddForm.jsx';
+import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Custom hook to get URL query parameters
 function useQuery() {
@@ -82,13 +83,13 @@ export default function EntitySearchAddPage({
 
             {/* Display parent entity names as headings */}
             {mergedParentInfo.universityName && (
-                <h2 style={{marginBottom: '0.5rem'}}>{mergedParentInfo.universityName}</h2>
+                <h2 style={{marginBottom: '0.5rem'}}>{formatEntityName(mergedParentInfo.universityName)}</h2>
             )}
             {mergedParentInfo.collegeName && (
-                <h2 style={{marginBottom: '0.5rem'}}>{mergedParentInfo.collegeName}</h2>
+                <h2 style={{marginBottom: '0.5rem'}}>{formatEntityName(mergedParentInfo.collegeName)}</h2>
             )}
             {mergedParentInfo.schoolName && (
-                <h2 style={{marginBottom: '0.5rem'}}>{mergedParentInfo.schoolName}</h2>
+                <h2 style={{marginBottom: '0.5rem'}}>{formatEntityName(mergedParentInfo.schoolName)}</h2>
             )}
 
             {/* Title for the search section */}

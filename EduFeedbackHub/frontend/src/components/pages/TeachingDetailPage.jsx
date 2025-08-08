@@ -9,6 +9,7 @@ import CommentSection from '../forms/CommentSection.jsx';
 import RatingComponent from '../forms/RatingComponent.jsx';
 import TeacherRatingTrendChart from '../forms/TeacherRatingTrendChart.jsx';
 import FollowButton from '../forms/FollowButton.jsx';
+import { formatEntityName, formatPersonName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Custom hook to extract query parameters from the URL
 function useQuery() {
@@ -108,7 +109,7 @@ export default function TeachingDetailPage() {
         const token = localStorage.getItem('token');
         if (token && teachingData && teachingData.lecturer && teachingData.module && teachingData.year) {
             // Compose a readable name for the teaching record
-            const entityName = `${teachingData.lecturer} - ${teachingData.module} (${teachingData.year})`;
+            const entityName = `${formatPersonName(teachingData.lecturer)} - ${formatEntityName(teachingData.module)} (${teachingData.year})`;
             fetch('/api/visit-history/', {
                 method: 'POST',
                 headers: {
@@ -150,7 +151,7 @@ export default function TeachingDetailPage() {
 
             <div style={{marginBottom: '1rem'}}>
                 {/* Display lecturer name */}
-                <p><strong>Lecturer:</strong> {teachingData.lecturer}</p>
+                <p><strong>Lecturer:</strong> {formatPersonName(teachingData.lecturer)}</p>
 
                 {/* Toggle button to show/hide rating trend chart */}
                 {teachingData.lecturer_id && (
@@ -360,7 +361,7 @@ export default function TeachingDetailPage() {
                 )}
 
                 {/* Display module name */}
-                <p><strong>Module:</strong> {teachingData.module}</p>
+                <p><strong>Module:</strong> {formatEntityName(teachingData.module)}</p>
 
                 {/* Display year */}
                 <p><strong>Year:</strong> {teachingData.year}</p>
@@ -369,14 +370,14 @@ export default function TeachingDetailPage() {
                 {teachingData.module_info && (
                     <>
                         {teachingData.module_info.school?.college?.university && (
-                            <p><strong>University:</strong> {teachingData.module_info.school.college.university.name}
+                            <p><strong>University:</strong> {formatEntityName(teachingData.module_info.school.college.university.name)}
                             </p>
                         )}
                         {teachingData.module_info.school?.college && (
-                            <p><strong>College:</strong> {teachingData.module_info.school.college.name}</p>
+                            <p><strong>College:</strong> {formatEntityName(teachingData.module_info.school.college.name)}</p>
                         )}
                         {teachingData.module_info.school && (
-                            <p><strong>School:</strong> {teachingData.module_info.school.name}</p>
+                            <p><strong>School:</strong> {formatEntityName(teachingData.module_info.school.name)}</p>
                         )}
                     </>
                 )}

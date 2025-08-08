@@ -5,6 +5,7 @@
 
 
 import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
+import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Configuration for each entity type
 const entityConfig = {
@@ -243,7 +244,7 @@ export default function EntitySearchInput({
                         >
                             {finalDisplayFields.map((field, idx) => (
                                 <span key={idx}>
-                                    {entity[field]}
+                                    {formatEntityName(entity[field])}
                                     {idx < finalDisplayFields.length - 1 ? ', ' : ''}
                                 </span>
                             ))}

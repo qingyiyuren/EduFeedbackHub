@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';// Import React and hooks
 import { useNavigate, Link } from 'react-router-dom';// Import routing components
 import EntitySearchInput from '../forms/EntitySearchInput.jsx';// Import custom components
+import {formatEntityName} from '../../utils/textUtils.js'; // Import text formatting utilities
 
 export default function ProfilePage() {
     const navigate = useNavigate();
@@ -182,15 +183,15 @@ export default function ProfilePage() {
                     </div>
                     
                     <div style={{ marginBottom: 16 }}>
-                        <strong>University:</strong> {university?.name || 'Not provided'}
+                        <strong>University:</strong> {formatEntityName(university?.name)}
                     </div>
                     
                     <div style={{ marginBottom: 16 }}>
-                        <strong>College:</strong> {college?.name || 'Not provided'}
+                        <strong>College:</strong> {formatEntityName(college?.name)}
                     </div>
                     
                     <div style={{ marginBottom: 16 }}>
-                        <strong>School:</strong> {school?.name || 'Not provided'}
+                        <strong>School:</strong> {formatEntityName(school?.name)}
                     </div>
                 </div>
 

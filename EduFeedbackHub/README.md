@@ -18,6 +18,7 @@ each university, facilitating educational feedback and continuous improvement.
 - Integrated notification system to alert users when their comments are replied to, including replies in subscribed module pages.  
 - New navigation bar added to improve page accessibility and user experience.  
 - Word cloud generation feature introduced to visualize key terms from comment data.
+- Intelligent capitalization for proper nouns.
 
 
 
@@ -28,7 +29,7 @@ each university, facilitating educational feedback and continuous improvement.
 - Database: SQLite (development environment; scalable to PostgreSQL)
 - Build Tools: Vite (frontend), Conda (Python virtual environment)
 - Version Control: Git
-- Other: AI modules (sentiment analysis using VADER, word cloud generation)
+- Other: AI modules (sentiment analysis using VADER, word cloud generation) and text formatting using the title-case package
 
 
 ## Installation and Running
