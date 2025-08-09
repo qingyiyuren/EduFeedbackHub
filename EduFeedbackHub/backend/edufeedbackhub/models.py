@@ -31,7 +31,7 @@ class University(models.Model):
         unique_together = ('name', 'region')  # Ensure that the combination of university name and region is unique
 
     def __str__(self):
-        return f"{self.name} ({self.region.name if self.region else 'No Region'})"  # String representation showing name and region or 'No Region'
+        return self.name  # String representation showing only university name
 
 
 class College(models.Model):
@@ -45,7 +45,7 @@ class College(models.Model):
         unique_together = ('university', 'name')  # Ensure that college name is unique within the same university
 
     def __str__(self):
-        return f"{self.name} ({self.university.name})"  # String representation showing college name and its university
+        return self.name  # String representation showing only college name
 
 
 class School(models.Model):
@@ -57,7 +57,7 @@ class School(models.Model):
         unique_together = ('college', 'name')
 
     def __str__(self):
-        return f"{self.name} ({self.college.name})"
+        return self.name  # String representation showing only school name
 
 
 class Module(models.Model):
@@ -72,7 +72,7 @@ class Module(models.Model):
         unique_together = ('school', 'name')  # Ensure Module names are unique within the same School
 
     def __str__(self):
-        return f"{self.name} ({self.school})"
+        return self.name  # String representation showing only module name
 
 
 class Lecturer(models.Model):
@@ -121,7 +121,7 @@ class Teaching(models.Model):
             'lecturer', 'module', 'year')  # Ensure a Lecturer teaches a specific Module only once per year
 
     def __str__(self):
-        return f"{self.lecturer} - {self.module} ({self.year})"  # String representation: Lecturer - Module (Year)
+        return f"{self.lecturer} - {self.module.name} ({self.year})"  # String representation: Lecturer - Module Name (Year)
 
 
 class Comment(models.Model):
@@ -168,11 +168,39 @@ class Comment(models.Model):
     )  # Indicates if the comment is posted anonymously by a student; when True, user identity should be hidden.
 
     def target_object(self):
-        # Returns a string describing the target entity this comment belongs to.
+        # Returns a string describing the target entity with complete hierarchy path.
         for field in ['university', 'college', 'school', 'module', 'lecturer', 'teaching']:
             obj = getattr(self, field)
             if obj:
-                return f"{field.capitalize()}: {obj}"
+                if field == 'university':
+                    return f"University: {obj.name}"
+                elif field == 'college':
+                    uni_name = obj.university.name if obj.university else "Unknown University"
+                    return f"College: {uni_name} - {obj.name}"
+                elif field == 'school':
+                    uni_name = obj.college.university.name if obj.college and obj.college.university else "Unknown University"
+                    college_name = obj.college.name if obj.college else "Unknown College"
+                    return f"School: {uni_name} - {college_name} - {obj.name}"
+                elif field == 'module':
+                    school = obj.school
+                    if school and school.college and school.college.university:
+                        uni_name = school.college.university.name
+                        college_name = school.college.name
+                        school_name = school.name
+                        return f"Module: {uni_name} - {college_name} - {school_name} - {obj.name}"
+                    else:
+                        return f"Module: {obj.name}"
+                elif field == 'lecturer':
+                    return f"Lecturer: {obj.name}"
+                elif field == 'teaching':
+                    module = obj.module
+                    if module and module.school and module.school.college and module.school.college.university:
+                        uni_name = module.school.college.university.name
+                        college_name = module.school.college.name
+                        school_name = module.school.name
+                        return f"Teaching: {obj.lecturer.name} - {uni_name} - {college_name} - {school_name} - {module.name} ({obj.year})"
+                    else:
+                        return f"Teaching: {obj.lecturer.name} - {module.name} ({obj.year})"
         return "Unknown"
 
     target_object.short_description = "Comment Target"  # Admin display name for the method.

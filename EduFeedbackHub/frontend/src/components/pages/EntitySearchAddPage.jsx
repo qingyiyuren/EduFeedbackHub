@@ -106,7 +106,18 @@ export default function EntitySearchAddPage({
 
             {/* Search button: navigate to selected entity's detail page */}
             <button
-                style={{marginTop: '10px', padding: '6px 18px', fontSize: '16px'}}
+                style={{
+                    marginTop: '10px',
+                    padding: '12px 20px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: '#42A5F5',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease'
+                }}
                 onClick={() => {
                     if (searchEntity && searchEntity.id) {
                         navigate(`/${entityType}/${searchEntity.id}`);
@@ -114,6 +125,8 @@ export default function EntitySearchAddPage({
                         window.alert(`Please select a ${entityDisplayName.toLowerCase()} to search.`);
                     }
                 }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#1E88E5'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#42A5F5'}
             >
                 Search
             </button>

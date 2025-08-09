@@ -5,7 +5,7 @@
 
 import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
 import {useNavigate} from 'react-router-dom'; // Import router hook
-import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { formatEntityName, formatTitleCase } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Configuration of API endpoints, display names, parent relations, and region requirement for each entity type
 const entityConfig = {
@@ -369,7 +369,7 @@ export default function EntityAddForm({
                     id={`${entityType}-name`}
                     type="text"
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    onChange={e => setName(formatTitleCase(e.target.value))}
                     onKeyDown={handleNameKeyDown}
                     autoComplete="off"
                     style={{width: '100%', padding: 6, fontSize: 16}}
@@ -475,7 +475,22 @@ export default function EntityAddForm({
             )}
 
             {/* Submit button */}
-            <button type="submit" style={{padding: '8px 16px'}}>
+            <button 
+                type="submit" 
+                style={{
+                    padding: '12px 20px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: '#42A5F5',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#1E88E5'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#42A5F5'}
+            >
                 Add
             </button>
         </form>

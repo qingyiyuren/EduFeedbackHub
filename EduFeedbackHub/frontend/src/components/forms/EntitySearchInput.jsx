@@ -5,7 +5,7 @@
 
 
 import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
-import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { formatEntityName, formatTitleCase } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Configuration for each entity type
 const entityConfig = {
@@ -167,17 +167,19 @@ export default function EntitySearchInput({
 
     // Select a suggestion (on mouse or keyboard)
     const handleSelect = (entity) => {
-        setQuery(entity.name || '');       // Fill input
+        setQuery(formatTitleCase(entity.name || ''));       // Fill input with title case formatted name
         setShowSuggestions(false);         // Close dropdown
         setActiveIndex(-1);
         setIsFocused(false);               // Blur
         if (onSelect) onSelect(entity);    // Always call onSelect, even if same entity
     };
 
-    // When input value changes, if cleared, also clear selection in parent
+    // When input value changes, apply title case formatting and clear selection if empty
     const handleInputChange = (e) => {
-        setQuery(e.target.value);
-        if (e.target.value === '' && onSelect) {
+        const inputValue = e.target.value;
+        const titleCaseValue = formatTitleCase(inputValue);
+        setQuery(titleCaseValue);
+        if (inputValue === '' && onSelect) {
             onSelect(null); // Notify parent to clear selection
         }
     };
@@ -244,7 +246,7 @@ export default function EntitySearchInput({
                         >
                             {finalDisplayFields.map((field, idx) => (
                                 <span key={idx}>
-                                    {formatEntityName(entity[field])}
+                                    {formatTitleCase(formatEntityName(entity[field]))}
                                     {idx < finalDisplayFields.length - 1 ? ', ' : ''}
                                 </span>
                             ))}

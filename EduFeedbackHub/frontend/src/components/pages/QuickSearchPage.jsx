@@ -288,7 +288,7 @@ export default function QuickSearchPage() {
 
     return (
         <div>
-            <h1>Quick Search</h1>
+            <h1>Quick Search & Add New Item</h1>
             <Link to="/" style={{marginBottom: '20px', display: 'block'}}>
                 Back to Home
             </Link>
@@ -368,46 +368,40 @@ export default function QuickSearchPage() {
                 )}
             </div>
 
-            {/* Search Mode Selection */}
-            <div style={{
-                marginBottom: '20px',
-                padding: '15px',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                backgroundColor: '#f8f9fa'
-            }}>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '24px'}}>
-                    <div>
-                        <h3 style={{marginBottom: '10px'}}>Search Mode</h3>
-                        <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                            <label
-                                style={{display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '4px'}}>
-                                <input
-                                    type="radio"
-                                    name="searchMode"
-                                    value="lecturer"
-                                    checked={searchMode === 'lecturer'}
-                                    onChange={(e) => setSearchMode(e.target.value)}
-                                    style={{marginRight: '8px'}}
-                                />
-                                Search Lecturers
-                            </label>
-                            <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}}>
-                                <input
-                                    type="radio"
-                                    name="searchMode"
-                                    value="entity"
-                                    checked={searchMode === 'entity'}
-                                    onChange={(e) => setSearchMode(e.target.value)}
-                                    style={{marginRight: '8px'}}
-                                />
-                                Browse Institutions & Courses
-                            </label>
-                        </div>
+            {/* Search Mode and Filters Combined */}
+            <div style={{marginBottom: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f8f9fa'}}>
+                {/* Search Mode Selection - Horizontal Layout */}
+                <div style={{marginBottom: '20px'}}>
+                    <h3 style={{marginBottom: '15px'}}>Search Mode & Filters</h3>
+                    <div style={{display: 'flex', gap: '30px', marginBottom: '15px'}}>
+                        <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}}>
+                            <input
+                                type="radio"
+                                name="searchMode"
+                                value="lecturer"
+                                checked={searchMode === 'lecturer'}
+                                onChange={(e) => setSearchMode(e.target.value)}
+                                style={{marginRight: '8px'}}
+                            />
+                            Search Lecturers
+                        </label>
+                        <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}}>
+                            <input
+                                type="radio"
+                                name="searchMode"
+                                value="entity"
+                                checked={searchMode === 'entity'}
+                                onChange={(e) => setSearchMode(e.target.value)}
+                                style={{marginRight: '8px'}}
+                            />
+                            Browse Institutions & Courses
+                        </label>
                     </div>
-                    <div style={{fontSize: '13px', color: '#555', maxWidth: 420, marginLeft: 16}}>
+                    
+                    {/* Tips Section - Placed below Search Mode options */}
+                    <div style={{fontSize: '13px', color: '#555', padding: '15px', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #e0e0e0', marginBottom: '15px'}}>
                         <strong>Tips:</strong>
-                        <ul style={{margin: 0, paddingLeft: 18}}>
+                        <ul style={{margin: '8px 0 0 0', paddingLeft: 18}}>
                             <li><b>To search</b> for information (such as rating trends or comments) about <b>lecturers
                                 already added</b> to this site, please use <b>Search Lecturers</b>.
                             </li>
@@ -426,11 +420,6 @@ export default function QuickSearchPage() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Search Form */}
-            <div style={{marginBottom: '30px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px'}}>
-                <h3>Search Filters</h3>
 
                 {/* Lecturer Name Search - Only for lecturer mode */}
                 {searchMode === 'lecturer' && (
@@ -680,14 +669,26 @@ export default function QuickSearchPage() {
                     onClick={handleSearch}
                     disabled={isSearchDisabled()}
                     style={{
-                        backgroundColor: '#28a745',
+                        backgroundColor: isSearchDisabled() ? '#ccc' : '#42A5F5',
                         color: 'white',
                         border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '4px',
+                        padding: '12px 20px',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '600',
                         cursor: isSearchDisabled() ? 'not-allowed' : 'pointer',
-                        opacity: isSearchDisabled() ? 0.6 : 1,
+                        transition: 'background-color 0.3s ease',
                         marginTop: '15px'
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!isSearchDisabled()) {
+                            e.target.style.backgroundColor = '#1E88E5';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!isSearchDisabled()) {
+                            e.target.style.backgroundColor = '#42A5F5';
+                        }
                     }}
                 >
                     {getSearchButtonText()}

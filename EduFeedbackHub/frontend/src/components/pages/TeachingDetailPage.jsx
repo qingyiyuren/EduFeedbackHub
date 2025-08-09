@@ -108,8 +108,28 @@ export default function TeachingDetailPage() {
         if (fromVisit === '1') return; // Do not record if from recent visit
         const token = localStorage.getItem('token');
         if (token && teachingData && teachingData.lecturer && teachingData.module && teachingData.year) {
-            // Compose a readable name for the teaching record
-            const entityName = `${formatPersonName(teachingData.lecturer)} - ${formatEntityName(teachingData.module)} (${teachingData.year})`;
+            // Helper function to build complete hierarchy path for teaching record
+            // This should match the format used in notification target_object method
+            const buildCompleteTeachingPath = (lecturer, module, moduleInfo, year) => {
+                if (moduleInfo && moduleInfo.school && moduleInfo.school.college && moduleInfo.school.college.university) {
+                    const uni = moduleInfo.school.college.university.name;
+                    const college = moduleInfo.school.college.name;
+                    const school = moduleInfo.school.name;
+                    const moduleName = module;
+                    return `${formatPersonName(lecturer)} - ${formatEntityName(uni)} - ${formatEntityName(college)} - ${formatEntityName(school)} - ${formatEntityName(moduleName)} (${year})`;
+                } else {
+                    // Fallback to simple format if hierarchy is incomplete
+                    return `${formatPersonName(lecturer)} - ${formatEntityName(module)} (${year})`;
+                }
+            };
+            
+            // Compose a complete hierarchy name for the teaching record
+            const entityName = buildCompleteTeachingPath(
+                teachingData.lecturer, 
+                teachingData.module, 
+                teachingData.module_info, 
+                teachingData.year
+            );
             fetch('/api/visit-history/', {
                 method: 'POST',
                 headers: {
@@ -149,24 +169,74 @@ export default function TeachingDetailPage() {
             {/* Main heading */}
             <h2>Teaching Record</h2>
 
+            {/* Navigation links placed after title */}
+            <div style={{marginBottom: '1.5rem', marginTop: '1rem'}}>
+                <p>
+                    <Link to={`/module/${teachingData.module_id}`}>Back to Module</Link>
+                </p>
+                <p><Link to="/">Back to Home</Link></p>
+            </div>
+
             <div style={{marginBottom: '1rem'}}>
                 {/* Display lecturer name */}
                 <p><strong>Lecturer:</strong> {formatPersonName(teachingData.lecturer)}</p>
 
+
+
+                {/* Display module name */}
+                <p><strong>Module:</strong> {formatEntityName(teachingData.module)}</p>
+
+                {/* Display year */}
+                <p><strong>Year:</strong> {teachingData.year}</p>
+
+                {/* Display hierarchical institution info if available */}
+                {teachingData.module_info && (
+                    <>
+                        {teachingData.module_info.school?.college?.university && (
+                            <p><strong>University:</strong> {formatEntityName(teachingData.module_info.school.college.university.name)}
+                            </p>
+                        )}
+                        {teachingData.module_info.school?.college && (
+                            <p><strong>College:</strong> {formatEntityName(teachingData.module_info.school.college.name)}</p>
+                        )}
+                        {teachingData.module_info.school && (
+                            <p><strong>School:</strong> {formatEntityName(teachingData.module_info.school.name)}</p>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Rating section for students */}
+            <RatingComponent
+                targetType="teaching"
+                targetId={parseInt(teachingId, 10)}
+                average={ratingData.average}
+                count={ratingData.count}
+                userRole={userRole}
+                onRatingChange={handleRatingChange}
+            />
+
+            {/* Analysis buttons placed below rating section */}
+            <div style={{marginBottom: '1.5rem', marginTop: '1rem'}}>
                 {/* Toggle button to show/hide rating trend chart */}
                 {teachingData.lecturer_id && (
                     <button 
                         onClick={() => setShowTrend(v => !v)} 
                         style={{
-                            backgroundColor: '#1976d2',
+                            backgroundColor: '#42A5F5',
                             color: 'white',
                             border: 'none',
-                            borderRadius: 4,
-                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            padding: '12px 20px',
+                            fontSize: '14px',
+                            fontWeight: '600',
                             cursor: 'pointer',
                             marginBottom: '0.5rem',
-                            marginRight: 8
+                            marginRight: 12,
+                            transition: 'background-color 0.3s ease'
                         }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#1E88E5'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#42A5F5'}
                     >
                         {showTrend ? 'Hide Rating Trend' : 'View Rating Trend'}
                     </button>
@@ -176,14 +246,26 @@ export default function TeachingDetailPage() {
                     onClick={showSentiment ? () => setShowSentiment(false) : handleAnalyzeSentiment}
                     disabled={sentimentLoading}
                     style={{
-                        backgroundColor: '#6c63ff',
+                        backgroundColor: sentimentLoading ? '#ccc' : '#6c63ff',
                         color: 'white',
                         border: 'none',
-                        borderRadius: 4,
-                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        padding: '12px 20px',
+                        fontSize: '14px',
+                        fontWeight: '600',
                         cursor: sentimentLoading ? 'not-allowed' : 'pointer',
-                        marginLeft: 8,
-                        opacity: sentimentLoading ? 0.7 : 1
+                        marginRight: 12,
+                        transition: 'background-color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!sentimentLoading) {
+                            e.target.style.backgroundColor = '#5848d1';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!sentimentLoading) {
+                            e.target.style.backgroundColor = '#6c63ff';
+                        }
                     }}
                 >
                     {sentimentLoading ? 'Analyzing...' : showSentiment ? 'Hide AI Analyze Comments' : 'View AI Analyze Comments'}
@@ -193,24 +275,49 @@ export default function TeachingDetailPage() {
                     onClick={showWordcloud ? () => setShowWordcloud(false) : handleGenerateWordcloud}
                     disabled={wordcloudLoading}
                     style={{
-                        backgroundColor: '#4caf50',
+                        backgroundColor: wordcloudLoading ? '#ccc' : '#4caf50',
                         color: 'white',
                         border: 'none',
-                        borderRadius: 4,
-                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        padding: '12px 20px',
+                        fontSize: '14px',
+                        fontWeight: '600',
                         cursor: wordcloudLoading ? 'not-allowed' : 'pointer',
-                        marginLeft: 8,
-                        opacity: wordcloudLoading ? 0.7 : 1
+                        transition: 'background-color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!wordcloudLoading) {
+                            e.target.style.backgroundColor = '#388e3c';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!wordcloudLoading) {
+                            e.target.style.backgroundColor = '#4caf50';
+                        }
                     }}
                 >
                     {wordcloudLoading ? 'Generating...' : showWordcloud ? 'Hide Word Cloud' : 'View Word Cloud'}
                 </button>
-                
+            </div>
+
+            {/* Analysis results and displays below buttons */}
+            <div>
                 {/* AI Analysis Loading and Error States */}
                 {sentimentLoading && <div style={{marginTop: 12}}>Analyzing comments...</div>}
                 {wordcloudLoading && <div style={{marginTop: 12}}>Generating word cloud...</div>}
                 {sentimentError && <div style={{marginTop: 12, color: 'red'}}>{sentimentError}</div>}
                 {wordcloudError && <div style={{marginTop: 12, color: 'red'}}>{wordcloudError}</div>}
+                
+                {/* Conditional rendering of rating trend chart */}
+                {showTrend && teachingData.lecturer_id && (
+                    <div style={{marginTop: 12}}>
+                        <TeacherRatingTrendChart
+                            lecturerId={teachingData.lecturer_id}
+                            schoolId={teachingData.module_info?.school?.id}
+                        />
+                    </div>
+                )}
+
                 {showSentiment && sentimentResult && (
                     <div style={{marginTop: 12, background: '#f4f6fa', borderRadius: 6, padding: 12}}>
                         <h4 style={{margin: 0, marginBottom: 6}}>AI Sentiment Analysis</h4>
@@ -351,59 +458,7 @@ export default function TeachingDetailPage() {
                         </details>
                     </div>
                 )}
-
-                {/* Conditional rendering of rating trend chart */}
-                {showTrend && teachingData.lecturer_id && (
-                    <TeacherRatingTrendChart
-                        lecturerId={teachingData.lecturer_id}
-                        schoolId={teachingData.module_info?.school?.id}
-                    />
-                )}
-
-                {/* Display module name */}
-                <p><strong>Module:</strong> {formatEntityName(teachingData.module)}</p>
-
-                {/* Display year */}
-                <p><strong>Year:</strong> {teachingData.year}</p>
-
-                {/* Display hierarchical institution info if available */}
-                {teachingData.module_info && (
-                    <>
-                        {teachingData.module_info.school?.college?.university && (
-                            <p><strong>University:</strong> {formatEntityName(teachingData.module_info.school.college.university.name)}
-                            </p>
-                        )}
-                        {teachingData.module_info.school?.college && (
-                            <p><strong>College:</strong> {formatEntityName(teachingData.module_info.school.college.name)}</p>
-                        )}
-                        {teachingData.module_info.school && (
-                            <p><strong>School:</strong> {formatEntityName(teachingData.module_info.school.name)}</p>
-                        )}
-                    </>
-                )}
             </div>
-
-            {/* Rating section for students */}
-            <RatingComponent
-                targetType="teaching"
-                targetId={parseInt(teachingId, 10)}
-                average={ratingData.average}
-                count={ratingData.count}
-                userRole={userRole}
-                onRatingChange={handleRatingChange}
-            />
-
-            {/* Follow Button */}
-            <FollowButton
-                entityType="teaching"
-                entityId={parseInt(teachingId, 10)}
-            />
-
-            {/* Navigation links */}
-            <p>
-                <Link to={`/module/${teachingData.module_id}`}>Back to Module</Link>
-            </p>
-            <p><Link to="/">Back to Home</Link></p>
 
             {/* Comment section for teaching record */}
             <CommentSection

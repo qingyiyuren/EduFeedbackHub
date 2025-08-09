@@ -187,7 +187,7 @@ export default function Layout({children}) {
                 }}>
                     {/* Site logo / title */}
                     <Link to="/" style={{
-                        color: '#1976d2',
+                        color: '#388e3c',
                         textDecoration: 'none',
                         fontWeight: 700,
                         fontSize: 22,

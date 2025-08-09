@@ -8,7 +8,7 @@ import {useParams, Link, useLocation, useNavigate} from 'react-router-dom'; // I
 import CommentSection from '../forms/CommentSection.jsx';
 import RatingComponent from '../forms/RatingComponent.jsx';
 import FollowButton from '../forms/FollowButton.jsx';
-import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { formatEntityName, formatTitleCase } from '../../utils/textUtils.js'; // Import text formatting utilities
 
 // Configuration for each entity type (used for routing, labels, hierarchy)
 const entityConfig = {
@@ -261,6 +261,25 @@ export default function EntityDetailPage({entityType = 'university'}) {
             )}
             {entityType === 'module' && !entityData.school && <h2>{formatEntityName(entityData.name)}</h2>}
 
+            {/* Back navigation links placed after titles */}
+            <div style={{marginBottom: '1.5rem', marginTop: '1rem'}}>
+                {/* Return to ranking page if came from one */}
+                {fromYear && <p><Link to={`/rankings/${fromYear}`}>Back to {fromYear} Rankings</Link></p>}
+
+                {/* Back links to parent entities */}
+                {entityType === 'school' && entityData.college && (
+                    <p><Link to={`/college/${entityData.college.id}`}>Back to {formatEntityName(entityData.college.name)}</Link></p>
+                )}
+                {entityType === 'college' && parentEntity && (
+                    <p><Link to={`/university/${parentEntity.id}`}>Back to {formatEntityName(parentEntity.name)}</Link></p>
+                )}
+                {entityType === 'module' && entityData.school && (
+                    <p><Link to={`/school/${entityData.school.id}`}>Back to {formatEntityName(entityData.school.name)}</Link></p>
+                )}
+
+                <p><Link to="/">Back to Home</Link></p>
+            </div>
+
             {/* Rating Component */}
             <RatingComponent
                 targetType={entityType}
@@ -271,27 +290,7 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 onRatingChange={handleRatingChange}
             />
 
-            {/* Follow Button */}
-            <FollowButton
-                entityType={entityType}
-                entityId={parseInt(entityId, 10)}
-            />
 
-            {/* Return to ranking page if came from one */}
-            {fromYear && <p><Link to={`/rankings/${fromYear}`}>Back to {fromYear} Rankings</Link></p>}
-
-            {/* Back links to parent entities */}
-            {entityType === 'school' && entityData.college && (
-                <p><Link to={`/college/${entityData.college.id}`}>Back to {formatEntityName(entityData.college.name)}</Link></p>
-            )}
-            {entityType === 'college' && parentEntity && (
-                <p><Link to={`/university/${parentEntity.id}`}>Back to {formatEntityName(parentEntity.name)}</Link></p>
-            )}
-            {entityType === 'module' && entityData.school && (
-                <p><Link to={`/school/${entityData.school.id}`}>Back to {formatEntityName(entityData.school.name)}</Link></p>
-            )}
-
-            <p><Link to="/">Back to Home</Link></p>
 
             {/* Button to search/add sub-entity under current */}
             {config.subEntityType && (
@@ -306,7 +305,20 @@ export default function EntityDetailPage({entityType = 'university'}) {
                         }
                         navigate(`${config.subEntitySearchPath}?${searchParams.toString()}`);
                     }}
-                    style={{marginTop: '1rem'}}
+                    style={{
+                        marginTop: '1rem',
+                        backgroundColor: '#42A5F5',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '12px 20px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#1E88E5'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#42A5F5'}
                 >
                     Search or Add {config.subEntityDisplayName} for Feedback
                 </button>
@@ -332,7 +344,23 @@ export default function EntityDetailPage({entityType = 'university'}) {
                     ) : (
                         <p>No teaching records found for this module.</p>
                     )}
-                    <button onClick={() => setShowTeachingForm(!showTeachingForm)} style={{marginTop: '1rem'}}>
+                    <button 
+                        onClick={() => setShowTeachingForm(!showTeachingForm)} 
+                        style={{
+                            marginTop: '1rem',
+                            backgroundColor: showTeachingForm ? '#dc3545' : '#42A5F5',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '12px 20px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = showTeachingForm ? '#c82333' : '#1E88E5'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = showTeachingForm ? '#dc3545' : '#42A5F5'}
+                    >
                         {showTeachingForm ? 'Cancel' : 'Add Teaching Record'}
                     </button>
 
@@ -347,7 +375,7 @@ export default function EntityDetailPage({entityType = 'university'}) {
                                         type="text"
                                         placeholder="Lecturer Name"
                                         value={newLecturerName}
-                                        onChange={(e) => setNewLecturerName(e.target.value)}
+                                        onChange={(e) => setNewLecturerName(formatTitleCase(e.target.value))}
                                         style={{ width: 220, padding: '4px', color: newLecturerName ? '#222' : '#888', boxSizing: 'border-box' }}
                                     />
                                 </div>
@@ -365,7 +393,23 @@ export default function EntityDetailPage({entityType = 'university'}) {
                                     </select>
                                 </div>
                             </div>
-                            <button onClick={handleAddTeaching} style={{marginTop: '1rem'}}>
+                            <button 
+                                onClick={handleAddTeaching} 
+                                style={{
+                                    marginTop: '1rem',
+                                    backgroundColor: '#42A5F5',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '12px 20px',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#1E88E5'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#42A5F5'}
+                            >
                                 Add Teaching Record
                             </button>
                         </div>

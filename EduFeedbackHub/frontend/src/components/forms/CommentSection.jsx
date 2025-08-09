@@ -5,8 +5,9 @@
 import React, {useState, useEffect} from 'react'; // Import React and hooks
 import CommentList from './CommentList.jsx';
 import CommentForm from './CommentForm.jsx';
+import FollowButton from './FollowButton.jsx';
 
-export default function CommentSection({targetType, targetId, targetIdName}) {
+export default function CommentSection({targetType, targetId, targetIdName, showFollowButton = true}) {
     // State to hold the list of comments
     const [comments, setComments] = useState([]);
     // State to indicate if comments are loading
@@ -47,6 +48,15 @@ export default function CommentSection({targetType, targetId, targetIdName}) {
     return (
         <div>
             <h3>Comments</h3>
+            
+            {/* Follow Button placed under Comments title */}
+            {showFollowButton && (
+                <FollowButton
+                    entityType={targetType}
+                    entityId={parseInt(targetId, 10)}
+                />
+            )}
+            
             <CommentList
                 comments={comments} // Pass comments to list
                 targetType={targetType}

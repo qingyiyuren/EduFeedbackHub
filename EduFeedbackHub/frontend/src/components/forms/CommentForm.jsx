@@ -87,7 +87,31 @@ export default function CommentForm({ targetType, targetId, targetIdName, parent
                 </label>
             </div>
             {error && <div style={{ color: '#d32f2f', marginBottom: 8 }}>{error}</div>}
-            <button type="submit" disabled={submitting || !content.trim()} style={{ padding: '6px 18px', fontSize: 15 }}>
+            <button 
+                type="submit" 
+                disabled={submitting || !content.trim()} 
+                style={{ 
+                    padding: '12px 20px', 
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    backgroundColor: submitting || !content.trim() ? '#ccc' : '#42A5F5',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: submitting || !content.trim() ? 'not-allowed' : 'pointer',
+                    transition: 'background-color 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                    if (!submitting && content.trim()) {
+                        e.target.style.backgroundColor = '#1E88E5';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (!submitting && content.trim()) {
+                        e.target.style.backgroundColor = '#42A5F5';
+                    }
+                }}
+            >
                 {submitting ? 'Submitting...' : 'Submit'}
             </button>
         </form>
