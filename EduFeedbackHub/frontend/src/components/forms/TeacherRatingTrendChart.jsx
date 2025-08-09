@@ -77,7 +77,7 @@ export default function TeacherRatingTrendChart({lecturerId, universityId, colle
     };
 
     return (
-        <div style={{width: '100%', height: 350, margin: '1rem 0'}}>
+        <div style={{width: '100%', height: 400, margin: '1rem 0', marginBottom: '1rem'}}>
             {/* Title for the chart */}
             <h4>Lecturer Rating Trend</h4>
             {/* Show filter description if provided, on a separate line */}
@@ -100,8 +100,8 @@ export default function TeacherRatingTrendChart({lecturerId, universityId, colle
             </div>
 
             {/* Responsive line chart using recharts */}
-            <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData} margin={{top: 10, right: 60, left: 0, bottom: 0}}>
+            <ResponsiveContainer width="100%" height={320}>
+                <LineChart data={chartData} margin={{top: 10, right: 60, left: 0, bottom: 50}}>
                     <XAxis dataKey="year" interval={0} padding={{right: 30}}/> {/* X-axis for years */}
                     <YAxis domain={[0, 5]} tickCount={6}/> {/* Y-axis from 0 to 5 */}
                     <Tooltip/> {/* Shows value details on hover */}
