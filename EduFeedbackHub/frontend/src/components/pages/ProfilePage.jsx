@@ -149,13 +149,24 @@ export default function ProfilePage() {
     }, [college?.name, isEditing]);
 
     if (loading) {
-        return <div style={{ padding: 20 }}>Loading profile...</div>;
+        return (
+            <div style={{ padding: 20 }}>
+                {/* Back to Home navigation */}
+                <p><Link to="/">Back to Home</Link></p>
+                <div>Loading profile...</div>
+            </div>
+        );
     }
 
     if (error) {
-        return <div style={{ padding: 20, color: 'red' }}>Error: {error}</div>;
+        return (
+            <div style={{ padding: 20 }}>
+                {/* Back to Home navigation */}
+                <p><Link to="/">Back to Home</Link></p>
+                <div style={{ color: 'red' }}>Error: {error}</div>
+            </div>
+        );
     }
-
 
     
     // Display mode - show profile information
@@ -164,6 +175,7 @@ export default function ProfilePage() {
             <div style={{ maxWidth: 600, margin: '0 auto', padding: 20 }}>
                 <h2>Profile</h2>
                 
+                {/* Back to Home navigation */}
                 <p><Link to="/">Back to Home</Link></p>
                 
                 <div style={{ 
@@ -230,6 +242,7 @@ export default function ProfilePage() {
         <div style={{ maxWidth: 600, margin: '0 auto', padding: 20 }}>
             <h2>{isEmpty ? 'Complete Your Profile' : 'Edit Profile'}</h2>
             
+            {/* Back to Home navigation */}
             <p><Link to="/">Back to Home</Link></p>
             
             {isEmpty && (
