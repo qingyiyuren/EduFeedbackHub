@@ -2,6 +2,7 @@
  * This component allows users to rate an entity and view the average rating.
  */
 import React, {useState, useEffect} from 'react';// Import React and hooks
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 // React component for star-based rating with current user interaction and average display
 export default function RatingComponent({
@@ -21,7 +22,7 @@ export default function RatingComponent({
     // Fetch the user's existing rating for the target entity (if any)
     useEffect(() => {
         if (!canRate || !token) return;
-        fetch(`/api/rate/user-rating/?target_type=${targetType}&target_id=${targetId}`, {
+        fetch(getApiUrlWithPrefix(`rate/user-rating/?target_type=${targetType}&target_id=${targetId}`), {
             headers: {
                 'Authorization': `Token ${token}`,
             },
@@ -39,7 +40,7 @@ export default function RatingComponent({
         if (!canRate || !token) return;
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/rate/', {
+            const response = await fetch(getApiUrlWithPrefix('rate/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

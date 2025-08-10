@@ -4,6 +4,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import {useNavigate, Link} from 'react-router-dom';// Import router hooks and components
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function Layout({children}) {
     const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function Layout({children}) {
         
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:8000/api/notifications/', {
+            const response = await fetch(getApiUrlWithPrefix('notifications/'), {
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'application/json',
@@ -58,7 +59,7 @@ export default function Layout({children}) {
         if (!token) return;
         
         try {
-            const response = await fetch('http://localhost:8000/api/notifications/', {
+            const response = await fetch(getApiUrlWithPrefix('notifications/'), {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Token ${token}`,
@@ -97,7 +98,7 @@ export default function Layout({children}) {
         
         const fetchUnreadCount = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/notifications/count/', {
+                const response = await fetch(getApiUrlWithPrefix('notifications/count/'), {
                     headers: {
                         'Authorization': `Token ${token}`,
                         'Content-Type': 'application/json',

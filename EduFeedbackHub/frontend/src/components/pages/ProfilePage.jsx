@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';// Import React and hooks
 import { useNavigate, Link } from 'react-router-dom';// Import routing components
 import EntitySearchInput from '../forms/EntitySearchInput.jsx';// Import custom components
 import {formatEntityName} from '../../utils/textUtils.js'; // Import text formatting utilities
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function ProfilePage() {
     const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function ProfilePage() {
             return;
         }
 
-        fetch('/api/profile/', {
+        fetch(getApiUrlWithPrefix('profile/'), {
             headers: {
                 'Authorization': `Token ${token}`
             }
@@ -80,7 +81,7 @@ export default function ProfilePage() {
         }
 
         try {
-            const response = await fetch('/api/profile/', {
+            const response = await fetch(getApiUrlWithPrefix('profile/'), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -101,7 +102,7 @@ export default function ProfilePage() {
 
             setSuccess('Profile updated successfully!');
             // After successful update, refetch the profile data to get the latest state
-            const updatedResponse = await fetch('/api/profile/', {
+            const updatedResponse = await fetch(getApiUrlWithPrefix('profile/'), {
                 headers: {
                     'Authorization': `Token ${token}`
                 }

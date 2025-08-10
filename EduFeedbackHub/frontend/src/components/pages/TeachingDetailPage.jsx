@@ -10,6 +10,7 @@ import RatingComponent from '../forms/RatingComponent.jsx';
 import TeacherRatingTrendChart from '../forms/TeacherRatingTrendChart.jsx';
 import FollowButton from '../forms/FollowButton.jsx';
 import { formatEntityName, formatPersonName } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 // Custom hook to extract query parameters from the URL
 function useQuery() {
@@ -51,7 +52,7 @@ export default function TeachingDetailPage() {
         setSentimentResult(null);
         
         try {
-            const sentimentRes = await fetch(`/api/teaching/${teachingId}/sentiment/`);
+            const sentimentRes = await fetch(getApiUrlWithPrefix(`teaching/${teachingId}/sentiment/`));
             if (!sentimentRes.ok) throw new Error('Failed to fetch sentiment analysis');
             
             const sentimentData = await sentimentRes.json();
@@ -72,7 +73,7 @@ export default function TeachingDetailPage() {
         setWordcloudData(null);
         
         try {
-            const wordcloudRes = await fetch(`/api/teaching/${teachingId}/wordcloud/`);
+            const wordcloudRes = await fetch(getApiUrlWithPrefix(`teaching/${teachingId}/wordcloud/`));
             if (!wordcloudRes.ok) throw new Error('Failed to fetch word cloud data');
             
             const wordcloudData = await wordcloudRes.json();
@@ -89,7 +90,7 @@ export default function TeachingDetailPage() {
     useEffect(() => {
         if (!teachingId) return;
         setLoading(true);
-        fetch(`/api/teaching/${teachingId}/`)
+        fetch(getApiUrlWithPrefix(`teaching/${teachingId}/`))
             .then(res => res.json())
             .then(data => {
                 setTeachingData(data.teaching);              // Set main teaching data
@@ -130,18 +131,18 @@ export default function TeachingDetailPage() {
                 teachingData.module_info, 
                 teachingData.year
             );
-            fetch('/api/visit-history/', {
+            fetch(getApiUrlWithPrefix('visit-history/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Token ${token}` // Add token for authentication
                 },
                 body: JSON.stringify({
-                    entityType: 'teaching',
-                    entityId: teachingData.id,
-                    entityName: entityName
+                    entity_type: 'teaching',
+                    entity_id: teachingData.id,
+                    entity_name: entityName
                 })
-            });
+            }).catch(err => console.error('Failed to record visit:', err));
             setVisitRecorded(true); // Mark as recorded to prevent duplicate
         }
     }, [teachingId, teachingData, visitRecorded, query]);

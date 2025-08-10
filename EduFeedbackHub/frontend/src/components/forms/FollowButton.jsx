@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function FollowButton({ entityType, entityId }) {
     const [isFollowing, setIsFollowing] = useState(false);
@@ -57,7 +58,7 @@ export default function FollowButton({ entityType, entityId }) {
 
         try {
             const method = isFollowing ? 'DELETE' : 'POST';
-            const response = await fetch('http://localhost:8000/api/follow/', {
+            const response = await fetch(getApiUrlWithPrefix('follow/'), {
                 method: method,
                 headers: {
                     'Authorization': `Token ${token}`,

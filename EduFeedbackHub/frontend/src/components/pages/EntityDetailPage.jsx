@@ -9,6 +9,7 @@ import CommentSection from '../forms/CommentSection.jsx';
 import RatingComponent from '../forms/RatingComponent.jsx';
 import FollowButton from '../forms/FollowButton.jsx';
 import { formatEntityName, formatTitleCase } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 // Configuration for each entity type (used for routing, labels, hierarchy)
 const entityConfig = {
@@ -85,20 +86,20 @@ export default function EntityDetailPage({entityType = 'university'}) {
     // State to ensure visit is only recorded once per page load
     const [visitRecorded, setVisitRecorded] = useState(false);
 
-    // Fetch entity details and comments
+    // Fetch entity data when component mounts or entityId changes
     useEffect(() => {
         if (!entityId) return;
-        setLoading(true);
-        fetch(`/api/${entityType}/${entityId}/`)
-            .then(res => res.json())
+
+        fetch(getApiUrlWithPrefix(`${entityType}/${entityId}/`))
+            .then(response => response.json())
             .then(data => {
-                setEntityData(data[entityType]);                  // Set core entity info
-                setRatingData(data.rating || { average: 0, count: 0 }); // Set rating data
-                if (entityType === 'module') setTeachings(data.teachings || []); // Set teaching records
+                setEntityData(data);
                 setLoading(false);
-                setVisitRecorded(false); // Reset visitRecorded when entity changes
             })
-            .catch(() => setLoading(false));                      // Handle errors silently
+            .catch(error => {
+                console.error('Error fetching entity data:', error);
+                setLoading(false);
+            });
     }, [entityId, entityType]);
 
     // Record visit history only once per entity page load
@@ -123,18 +124,18 @@ export default function EntityDetailPage({entityType = 'university'}) {
             } else if (entityType === 'module' && entityData.school) {
                 hierarchicalName = `${formatEntityName(entityData.school.name)} - ${formatEntityName(entityData.name)}`;
             }
-            fetch('/api/visit-history/', {
+            fetch(getApiUrlWithPrefix('visit-history/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Token ${token}` // Add token for authentication
+                    'Authorization': `Token ${token}`
                 },
                 body: JSON.stringify({
-                    entityType: entityType,
-                    entityId: entityData.id,
-                    entityName: hierarchicalName
+                    entity_type: entityType,
+                    entity_id: entityData.id,
+                    entity_name: hierarchicalName
                 })
-            });
+            }).catch(err => console.error('Failed to record visit:', err));
             setVisitRecorded(true); // Mark as recorded to prevent duplicate
         }
     }, [entityId, entityType, entityData, visitRecorded, query]);
@@ -163,10 +164,18 @@ export default function EntityDetailPage({entityType = 'university'}) {
             let lecturerId;
 
             // Try adding new lecturer
-            const lecturerResponse = await fetch('/api/lecturer/add/', {
+            const lecturerResponse = await fetch(getApiUrlWithPrefix('lecturer/add/'), {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name: newLecturerName.trim()}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}`
+                },
+                body: JSON.stringify({
+                    name: newLecturerName.trim(),
+                    university: entityData.university,
+                    college: entityData.college,
+                    school: entityData.school
+                })
             });
 
             const lecturerData = await lecturerResponse.json();
@@ -180,14 +189,17 @@ export default function EntityDetailPage({entityType = 'university'}) {
             }
 
             // Submit teaching record
-            const response = await fetch('/api/teaching/add/', {
+            const response = await fetch(getApiUrlWithPrefix('teaching/add/'), {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}`
+                },
                 body: JSON.stringify({
-                    lecturer_id: lecturerId,
-                    module_id: entityId,
-                    year: selectedYear,
-                }),
+                    module: entityData.id,
+                    lecturer: lecturerId,
+                    year: selectedYear
+                })
             });
 
             const data = await response.json();
@@ -197,9 +209,14 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 setShowTeachingForm(false);
                 setSelectedYear('');
                 setNewLecturerName('');
-                fetch(`/api/module/${entityId}/`)
-                    .then(res => res.json())
-                    .then(data => setTeachings(data.teachings || []));
+                fetch(getApiUrlWithPrefix(`module/${entityId}/`))
+                    .then(response => response.json())
+                    .then(data => {
+                        setTeachings(data.teachings || []);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching teachings:', error);
+                    });
             } else {
                 alert(data.error || 'Failed to add teaching record');
             }

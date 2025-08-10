@@ -6,6 +6,7 @@
 import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
 import {useNavigate} from 'react-router-dom'; // Import router hook
 import { formatEntityName, formatTitleCase } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 // Configuration of API endpoints, display names, parent relations, and region requirement for each entity type
 const entityConfig = {
@@ -160,7 +161,7 @@ export default function EntityAddForm({
             setShowRegionSuggestions(false);
             return;
         }
-        fetch(`/api/region/search/?q=${encodeURIComponent(region.trim())}`)
+        fetch(getApiUrlWithPrefix(`region/search/?q=${encodeURIComponent(region.trim())}`))
             .then(res => res.json())
             .then(data => {
                 setRegionSuggestions(data.regions || []);

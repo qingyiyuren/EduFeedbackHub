@@ -6,6 +6,7 @@
 
 import React, {useState, useEffect, useRef} from 'react'; // Import React and hooks
 import { formatEntityName, formatTitleCase } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 // Configuration for each entity type
 const entityConfig = {
@@ -83,12 +84,26 @@ export default function EntitySearchInput({
 
     // Build full search API URL with query and parent params
     const buildApiUrl = () => {
-        const url = new URL(config.apiEndpoint, window.location.origin);
-        url.searchParams.set('q', query); // Add query string
-        if (config.parentEntityType && parentInfo[`${config.parentEntityType}Id`]) {
-            url.searchParams.set(config.parentEntityParam, parentInfo[`${config.parentEntityType}Id`]); // Add parent param
+        const baseUrl = getApiUrlWithPrefix(`${entityType}/search/`);
+        const params = new URLSearchParams();
+        
+        if (query.trim()) {
+            params.append('q', query.trim());
         }
-        return url.toString();
+        
+        if (parentInfo.universityId) {
+            params.append('university_id', parentInfo.universityId);
+        }
+        
+        if (parentInfo.collegeId) {
+            params.append('college_id', parentInfo.collegeId);
+        }
+        
+        if (parentInfo.schoolId) {
+            params.append('school_id', parentInfo.schoolId);
+        }
+        
+        return `${baseUrl}?${params.toString()}`;
     };
 
     // Effect: fetch suggestions when query, focus or parent info changes

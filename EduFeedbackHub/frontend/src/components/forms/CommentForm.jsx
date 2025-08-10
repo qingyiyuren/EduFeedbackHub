@@ -3,6 +3,7 @@
  * It supports anonymous posting and requires login.
  */
 import React, { useState } from 'react'; // Import React and useState hook
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function CommentForm({ targetType, targetId, targetIdName, parentId, onCommentAdded }) {
     // Get auth token from localStorage
@@ -41,7 +42,7 @@ export default function CommentForm({ targetType, targetId, targetIdName, parent
             }
             if (parentId) payload.parent_id = parentId;
             // Send POST request to add comment
-            const res = await fetch('/api/comment/add/', {
+            const res = await fetch(getApiUrlWithPrefix('comment/add/'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

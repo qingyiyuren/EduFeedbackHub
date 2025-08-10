@@ -5,6 +5,7 @@
 import React, { useState } from 'react'; // Import React and useState hook
 import CommentForm from './CommentForm.jsx';
 import { formatPersonName } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function CommentList({
     comments,         // Array of comment objects
@@ -38,7 +39,7 @@ export default function CommentList({
         if (!window.confirm('Are you sure you want to delete this comment?')) return;
 
         const token = localStorage.getItem('token');
-        fetch(`/api/comment/${id}/delete/`, {
+        fetch(getApiUrlWithPrefix(`comment/${id}/delete/`), {
             method: 'POST',
             headers: token ? { 'Authorization': `Token ${token}` } : {},
         })

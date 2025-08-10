@@ -4,6 +4,7 @@
  */
 import React, {useEffect, useState} from 'react';// Import React and hooks
 import {Link, useNavigate} from 'react-router-dom'; // Import router hooks and components
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 function QSYearListPage() {
     const [years, setYears] = useState([]);  // State to store list of years
@@ -11,7 +12,7 @@ function QSYearListPage() {
 
     // Fetch the list of years from backend API on component mount
     useEffect(() => {
-        fetch('/api/years/')              // GET request to API endpoint
+        fetch(getApiUrlWithPrefix('years/'))              // GET request to API endpoint
             .then((res) => res.json())   // Parse JSON response
             .then((data) => {
     

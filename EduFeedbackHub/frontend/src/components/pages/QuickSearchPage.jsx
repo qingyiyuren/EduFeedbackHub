@@ -9,6 +9,7 @@ import EntitySearchInput from '../forms/EntitySearchInput.jsx';
 import EntityAddForm from '../forms/EntityAddForm.jsx';
 import TeacherRatingTrendChart from '../forms/TeacherRatingTrendChart.jsx';
 import { formatEntityName, formatPersonName } from '../../utils/textUtils.js'; // Import text formatting utilities
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function QuickSearchPage() {
     const location = useLocation();
@@ -51,7 +52,7 @@ export default function QuickSearchPage() {
         // Get token from localStorage (assumes login stores it as 'token')
         const token = localStorage.getItem('token');
         if (!token) return; // If not logged in, skip
-        fetch('/api/visit-history/', {
+        fetch(getApiUrlWithPrefix('visit-history/'), {
             headers: {
                 'Authorization': `Token ${token}` // Add token for authentication
             }
@@ -127,7 +128,7 @@ export default function QuickSearchPage() {
             if (collegeId) params.append('college_id', collegeId);
             if (schoolId) params.append('school_id', schoolId);
             if (year) params.append('year_filter', year);
-            const response = await fetch(`/api/lecturer/${lecturerId}/details/?${params}`);
+            const response = await fetch(getApiUrlWithPrefix(`lecturer/${lecturerId}/details/?${params}`));
             const data = await response.json();
             setLecturerDetails(data);
         } catch (error) {

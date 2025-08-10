@@ -1,28 +1,37 @@
 /**
- * This component allows users to view QS World University Rankings for a specific year.
- * Rankings are displayed in a table with navigation to university details.
+ * This component displays QS rankings for a specific year.
+ * It fetches data from the backend API and presents it in a user-friendly format.
  */
-import React, {useEffect, useState} from 'react'; // Import React and hooks
-import {Link, useParams} from 'react-router-dom'; // Import router hooks and components
+import React, {useEffect, useState} from 'react';// Import React and hooks
+import {useParams, Link} from 'react-router-dom'; // Import router hooks and components
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 import { formatEntityName } from '../../utils/textUtils.js'; // Import text formatting utilities
 
-export default function QSYearDetailPage() {
-    const {year} = useParams();  // Get the "year" parameter from the URL (e.g., /rankings/2024)
+function QSYearDetailPage() {
+    const {year} = useParams();  // Extract year from URL parameters
+    const [rankings, setRankings] = useState([]);  // State to store rankings data
+    const [loading, setLoading] = useState(true);  // Loading state
+    const [error, setError] = useState(null);      // Error state
 
-    // State variables: "rankings" holds the university ranking data; "loading" indicates loading state
-    const [rankings, setRankings] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    // When the page loads or when "year" changes, fetch ranking data from the backend
+    // Fetch rankings data for the specific year when component mounts
     useEffect(() => {
-        fetch(`/api/rankings/${year}/`)  // Send GET request
-            .then(res => res.json())     // Parse the JSON response
-            .then(data => {
-                setRankings(data.rankings); // Store rankings in state
-                setLoading(false);          // Mark loading as complete
+        fetch(getApiUrlWithPrefix(`rankings/${year}/`))  // Send GET request
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error('Failed to fetch rankings');
+                }
+                return res.json();
             })
-            .catch(() => setLoading(false)); // Also stop loading on error
-    }, [year]); // Dependency array: re-run effect when "year" changes
+            .then((data) => {
+                setRankings(data.rankings || []);  // Update state with rankings data
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.error('Error fetching rankings:', err);
+                setError(err.message);
+                setLoading(false);
+            });
+    }, [year]);  // Re-run effect when year changes
 
     // Show loading message while fetching
     if (loading) return <p>Loading rankings...</p>;
@@ -63,3 +72,5 @@ export default function QSYearDetailPage() {
         </div>
     );
 }
+
+export default QSYearDetailPage;
