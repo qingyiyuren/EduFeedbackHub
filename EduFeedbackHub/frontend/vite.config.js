@@ -11,6 +11,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ command, mode }) => {
     const isProduction = command === 'build';
     
+    // Load environment variables
+    const env = mode === 'production' ? '.env.production' : '.env.local';
+    
     return {
         plugins: [react()],
 
@@ -28,6 +31,13 @@ export default defineConfig(({ command, mode }) => {
                     }
                 }
             }
+        },
+
+        // Environment variable handling
+        define: {
+            'import.meta.env.VITE_API_URL': JSON.stringify(
+                process.env.VITE_API_URL || 'https://edufeedbackhub.onrender.com'
+            )
         },
 
         server: {

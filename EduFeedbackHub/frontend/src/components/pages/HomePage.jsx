@@ -5,12 +5,12 @@ import React from 'react';// Import React
 import {Link} from 'react-router-dom'; // Import router component
 
 export default function HomePage() {
-    // Retrieve username and role from localStorage (if logged in)
+    // Get username from localStorage if available
     const username = localStorage.getItem('username');
-    const role = localStorage.getItem('role');
 
     return (
         <div style={{paddingTop: 60, textAlign: 'center'}}>
+
             {/* Display a welcome message if the user is logged in */}
             {username && (
                 <div style={{color: '#1976d2', fontWeight: 500, marginBottom: 32, fontSize: '1.4em'}}>

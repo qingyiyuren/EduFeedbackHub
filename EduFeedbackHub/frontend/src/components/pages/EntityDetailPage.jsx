@@ -72,7 +72,6 @@ export default function EntityDetailPage({entityType = 'university'}) {
     // State for core data
     const [entityData, setEntityData] = useState(null);   // Current entity data
     const [loading, setLoading] = useState(true);         // Loading indicator
-    const [refreshComments, setRefreshComments] = useState(false); // Trigger refresh
     const [ratingData, setRatingData] = useState({ average: 0, count: 0 }); // Rating data
 
     // Module-specific state
@@ -93,7 +92,30 @@ export default function EntityDetailPage({entityType = 'university'}) {
         fetch(getApiUrlWithPrefix(`${entityType}/${entityId}/`))
             .then(response => response.json())
             .then(data => {
-                setEntityData(data);
+                // Handle nested data structure from backend
+                if (data[entityType]) {
+                    // Backend returns nested structure like {university: {...}, comments: [...], rating: {...}}
+                    setEntityData(data[entityType]);
+                    if (data.rating) {
+                        setRatingData({
+                            average: data.rating.average || 0,
+                            count: data.rating.count || 0
+                        });
+                    } else {
+                        setRatingData({ average: 0, count: 0 });
+                    }
+                } else {
+                    // Direct data structure (fallback)
+                    setEntityData(data);
+                    if (data.rating) {
+                        setRatingData({
+                            average: data.rating.average || 0,
+                            count: data.rating.count || 0
+                        });
+                    } else {
+                        setRatingData({ average: 0, count: 0 });
+                    }
+                }
                 setLoading(false);
             })
             .catch(error => {
@@ -131,9 +153,9 @@ export default function EntityDetailPage({entityType = 'university'}) {
                     'Authorization': `Token ${token}`
                 },
                 body: JSON.stringify({
-                    entity_type: entityType,
-                    entity_id: entityData.id,
-                    entity_name: hierarchicalName
+                    entityType: entityType,
+                    entityId: entityData.id,
+                    entityName: hierarchicalName
                 })
             }).catch(err => console.error('Failed to record visit:', err));
             setVisitRecorded(true); // Mark as recorded to prevent duplicate
@@ -250,12 +272,30 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 </div>
             )}
 
+            {/* School with college but no university */}
+            {entityType === 'school' && entityData.college && !entityData.college.university && (
+                <div style={{marginBottom: '1rem'}}>
+                    <h3>{formatEntityName(entityData.college.name)}</h3>
+                    <h2>{formatEntityName(entityData.name)}</h2>
+                </div>
+            )}
+
+            {/* School without college */}
+            {entityType === 'school' && !entityData.college && (
+                <h2>{formatEntityName(entityData.name)}</h2>
+            )}
+
             {/* College under university */}
             {entityType === 'college' && parentEntity && (
                 <div style={{marginBottom: '1rem'}}>
                     <h3>{formatEntityName(parentEntity.name)} {parentEntity.region && `(${parentEntity.region})`}</h3>
                     <h2>{formatEntityName(entityData.name)}</h2>
                 </div>
+            )}
+
+            {/* College without university */}
+            {entityType === 'college' && !parentEntity && (
+                <h2>{formatEntityName(entityData.name)}</h2>
             )}
 
             {/* University only */}
@@ -272,11 +312,18 @@ export default function EntityDetailPage({entityType = 'university'}) {
                     <h2>{formatEntityName(entityData.name)}</h2>
                 </div>
             )}
+            
             {/* Module with partial hierarchy */}
             {entityType === 'module' && entityData.school && (!entityData.school.college || !entityData.school.college.university) && (
                 <div><h3>{formatEntityName(entityData.school.name)}</h3><h2>{formatEntityName(entityData.name)}</h2></div>
             )}
+            
             {entityType === 'module' && !entityData.school && <h2>{formatEntityName(entityData.name)}</h2>}
+
+            {/* Lecturer */}
+            {entityType === 'lecturer' && (
+                <h2>{formatEntityName(entityData.name)}</h2>
+            )}
 
             {/* Back navigation links placed after titles */}
             <div style={{marginBottom: '1.5rem', marginTop: '1rem'}}>

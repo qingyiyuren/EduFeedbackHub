@@ -138,9 +138,9 @@ export default function TeachingDetailPage() {
                     'Authorization': `Token ${token}` // Add token for authentication
                 },
                 body: JSON.stringify({
-                    entity_type: 'teaching',
-                    entity_id: teachingData.id,
-                    entity_name: entityName
+                    entityType: 'teaching',
+                    entityId: teachingData.id,
+                    entityName: entityName
                 })
             }).catch(err => console.error('Failed to record visit:', err));
             setVisitRecorded(true); // Mark as recorded to prevent duplicate

@@ -4,6 +4,16 @@
 // Get the API URL from environment variables or use default
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Debug logging for production troubleshooting
+if (typeof window !== 'undefined') {
+    console.log('Environment check:', {
+        hostname: window.location.hostname,
+        VITE_API_URL: import.meta.env.VITE_API_URL,
+        finalAPI_URL: API_URL,
+        isProduction: window.location.hostname.includes('onrender.com')
+    });
+}
+
 // Export the API configuration
 export const API_CONFIG = {
     // Base URL for all API calls
@@ -42,7 +52,4 @@ export const getApiUrlWithPrefix = (endpoint) => {
     return `${API_URL}/api/${cleanEndpoint}`;
 };
 
-// Log the current API configuration (for debugging)
-console.log('Current API URL:', API_URL);
-console.log('Environment:', import.meta.env.MODE);
-console.log('API_CONFIG:', API_CONFIG);
+

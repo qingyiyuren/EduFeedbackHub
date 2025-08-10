@@ -1,12 +1,17 @@
 # Changelog
 
+## [1.0.0] - 2025-08-10
+
+### Added
+
+- Hosted production release (frontend): deployed to https://edufeedbackhub-frontend.onrender.com/
+- Hosted production release (backend API): deployed to https://edufeedbackhub.onrender.com/
 
 ## [0.2.3] - 2025-08-08
 
 ### Added
 
 - Intelligent capitalization for proper nouns.
-
 
 ## [0.2.2] - 2025-08-03
 
