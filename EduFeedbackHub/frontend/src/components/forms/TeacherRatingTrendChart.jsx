@@ -3,6 +3,7 @@
  */
 import React, {useEffect, useState} from 'react';// Import React and hooks
 import {LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer} from 'recharts';// Import chart components from Recharts for rendering responsive line charts.
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function TeacherRatingTrendChart({lecturerId, universityId, collegeId, schoolId, year_filter}) {
     const [trendData, setTrendData] = useState(null);         // State to store fetched rating trend data
@@ -16,10 +17,11 @@ export default function TeacherRatingTrendChart({lecturerId, universityId, colle
     else if (collegeId) filterDesc = ' (in this College)';
     else if (universityId) filterDesc = ' (in this University)';
 
-    // Fetch rating trend data from backend when component mounts or dependencies change
+    // Fetch rating trend data for the lecturer
     useEffect(() => {
-        setLoading(true); // Start loading
-        let url = `/api/lecturer/${lecturerId}/rating_trend/?`; // Base API endpoint
+        if (!lecturerId) return;
+
+        let url = getApiUrlWithPrefix(`lecturer/${lecturerId}/rating_trend/?`); // Base API endpoint
         const params = [];
         if (universityId) params.push(`university_id=${universityId}`);
         if (collegeId) params.push(`college_id=${collegeId}`);

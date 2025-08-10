@@ -6,6 +6,7 @@ import React, {useState, useEffect} from 'react'; // Import React and hooks
 import CommentList from './CommentList.jsx';
 import CommentForm from './CommentForm.jsx';
 import FollowButton from './FollowButton.jsx';
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function CommentSection({targetType, targetId, targetIdName, showFollowButton = true}) {
     // State to hold the list of comments
@@ -15,18 +16,19 @@ export default function CommentSection({targetType, targetId, targetIdName, show
     // State to trigger refresh when a comment is added or deleted
     const [refreshFlag, setRefreshFlag] = useState(false);
 
-    // Effect: Fetch comments from the backend API when target changes or refresh is triggered
+    // Fetch comments for the target entity
     useEffect(() => {
-        if (!targetType || !targetId) return; // Do nothing if required props are missing
+        if (!targetId) return;
+
+        let url;
+        if (targetType === 'university') url = getApiUrlWithPrefix(`university/${targetId}/`);
+        else if (targetType === 'college') url = getApiUrlWithPrefix(`college/${targetId}/`);
+        else if (targetType === 'school') url = getApiUrlWithPrefix(`school/${targetId}/`);
+        else if (targetType === 'module') url = getApiUrlWithPrefix(`module/${targetId}/`);
+        else if (targetType === 'teaching') url = getApiUrlWithPrefix(`teaching/${targetId}/`);
+        else return;
+
         setLoading(true); // Set loading state
-        let url = '';
-        // Determine API endpoint based on entity type
-        if (targetType === 'university') url = `/api/university/${targetId}/`;
-        else if (targetType === 'college') url = `/api/college/${targetId}/`;
-        else if (targetType === 'school') url = `/api/school/${targetId}/`;
-        else if (targetType === 'module') url = `/api/module/${targetId}/`;
-        else if (targetType === 'teaching') url = `/api/teaching/${targetId}/`;
-        else return; // Unknown type, do nothing
         fetch(url)
             .then(res => res.json())
             .then(data => {

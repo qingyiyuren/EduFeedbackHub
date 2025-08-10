@@ -12,14 +12,14 @@ import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configu
 const entityConfig = {
     university: {
         displayName: 'University',
-        apiEndpoint: '/api/university/search/',       // Search API endpoint
+        apiEndpoint: getApiUrlWithPrefix('university/search/'),       // Search API endpoint
         responseKey: 'universities',                  // Response key in JSON
         defaultDisplayFields: ['name', 'region'],     // Fields to display in dropdown
         parentEntityType: null,                       // No parent for university
     },
     college: {
         displayName: 'College',
-        apiEndpoint: '/api/college/search/',
+        apiEndpoint: getApiUrlWithPrefix('college/search/'),
         responseKey: 'colleges',
         defaultDisplayFields: ['name'],
         parentEntityType: 'university',               // College belongs to a university
@@ -27,7 +27,7 @@ const entityConfig = {
     },
     school: {
         displayName: 'School',
-        apiEndpoint: '/api/school/search/',
+        apiEndpoint: getApiUrlWithPrefix('school/search/'),
         responseKey: 'schools',
         defaultDisplayFields: ['name'],
         parentEntityType: 'college',
@@ -35,7 +35,7 @@ const entityConfig = {
     },
     module: {
         displayName: 'Module',
-        apiEndpoint: '/api/module/search/',
+        apiEndpoint: getApiUrlWithPrefix('module/search/'),
         responseKey: 'modules',
         defaultDisplayFields: ['name'],
         parentEntityType: 'school',
@@ -43,7 +43,7 @@ const entityConfig = {
     },
     lecturer: {
         displayName: 'Lecturer',
-        apiEndpoint: '/api/lecturer/search/',
+        apiEndpoint: getApiUrlWithPrefix('lecturer/search/'),
         responseKey: 'lecturers',
         defaultDisplayFields: ['name'],
         parentEntityType: null,

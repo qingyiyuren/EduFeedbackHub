@@ -12,8 +12,8 @@ import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configu
 const entityConfig = {
     university: {
         displayName: 'University',
-        apiSearchEndpoint: '/api/university/search/',   // Search existing universities
-        apiAddEndpoint: '/api/university/add/',         // Add new university
+        apiSearchEndpoint: getApiUrlWithPrefix('university/search/'),   // Search existing universities
+        apiAddEndpoint: getApiUrlWithPrefix('university/add/'),         // Add new university
         responseKey: 'universities',                     // Key in API response data
         requireRegion: true,                             // University requires region field
         parentEntityType: null,                          // University has no parent entity
@@ -21,8 +21,8 @@ const entityConfig = {
     },
     college: {
         displayName: 'College',
-        apiSearchEndpoint: '/api/college/search/',
-        apiAddEndpoint: '/api/college/add/',
+        apiSearchEndpoint: getApiUrlWithPrefix('college/search/'),
+        apiAddEndpoint: getApiUrlWithPrefix('college/add/'),
         responseKey: 'colleges',
         requireRegion: false,
         parentEntityType: 'university',                  // College must link to university
@@ -30,8 +30,8 @@ const entityConfig = {
     },
     school: {
         displayName: 'School',
-        apiSearchEndpoint: '/api/school/search/',
-        apiAddEndpoint: '/api/school/add/',
+        apiSearchEndpoint: getApiUrlWithPrefix('school/search/'),
+        apiAddEndpoint: getApiUrlWithPrefix('school/add/'),
         responseKey: 'schools',
         requireRegion: false,
         parentEntityType: 'college',                      // School must link to college
@@ -39,8 +39,8 @@ const entityConfig = {
     },
     module: {
         displayName: 'Module',
-        apiSearchEndpoint: '/api/module/search/',
-        apiAddEndpoint: '/api/module/add/',
+        apiSearchEndpoint: getApiUrlWithPrefix('module/search/'),
+        apiAddEndpoint: getApiUrlWithPrefix('module/add/'),
         responseKey: 'modules',
         requireRegion: false,
         parentEntityType: 'school',                       // Module linked to school
@@ -48,8 +48,8 @@ const entityConfig = {
     },
     lecturer: {
         displayName: 'Lecturer',
-        apiSearchEndpoint: '/api/lecturer/search/',
-        apiAddEndpoint: '/api/lecturer/add/',
+        apiSearchEndpoint: getApiUrlWithPrefix('lecturer/search/'),
+        apiAddEndpoint: getApiUrlWithPrefix('lecturer/add/'),
         responseKey: 'lecturers',
         requireRegion: false,
         parentEntityType: null,

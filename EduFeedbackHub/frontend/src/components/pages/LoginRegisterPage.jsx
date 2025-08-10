@@ -4,6 +4,7 @@
  */
 import React, {useState} from 'react';// Import React and useState hook
 import {useNavigate, Link} from 'react-router-dom';// Import router hooks and components
+import { getApiUrlWithPrefix } from '../../config/api.js'; // Import API configuration
 
 export default function LoginRegisterPage() {
     // State to toggle between login and register modes
@@ -26,7 +27,7 @@ export default function LoginRegisterPage() {
         e.preventDefault(); // Prevent default form action
         setError('');
         setSuccess('');
-        const url = isLogin ? '/api/login/' : '/api/register/';
+        const url = isLogin ? getApiUrlWithPrefix('login/') : getApiUrlWithPrefix('register/');
         const body = isLogin ? {username, password} : {username, password, role};
 
         try {

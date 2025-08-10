@@ -18,33 +18,21 @@ export default function FollowButton({ entityType, entityId }) {
     // Check if user is logged in
     const isLoggedIn = !!token;
 
-    // Fetch initial follow status
+    // Check if user is following this entity
     useEffect(() => {
-        if (!isLoggedIn) return;
-
-        const checkFollowStatus = async () => {
-            try {
-                const response = await fetch(
-                    `http://localhost:8000/api/follow/status/?entity_type=${entityType}&entity_id=${entityId}`,
-                    {
-                        headers: {
-                            'Authorization': `Token ${token}`,
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setIsFollowing(data.is_following);
-                }
-            } catch (error) {
-                console.error('Error checking follow status:', error);
+        if (!token) return;
+        
+        fetch(getApiUrlWithPrefix(`follow/status/?entity_type=${entityType}&entity_id=${entityId}`), {
+            headers: {
+                'Authorization': `Token ${token}`
             }
-        };
-
-        checkFollowStatus();
-    }, [entityType, entityId, token, isLoggedIn]);
+        })
+        .then(res => res.json())
+        .then(data => {
+            setIsFollowing(data.is_following || false);
+        })
+        .catch(err => console.error('Failed to check follow status:', err));
+    }, [entityType, entityId, token]);
 
     // Toggle follow/unfollow
     const toggleFollow = async () => {
