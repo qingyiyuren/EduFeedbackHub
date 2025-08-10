@@ -48,15 +48,6 @@ export default defineConfig(({ command, mode }) => {
                     rewrite: (path) => path.replace(/^\/api/, '/api'),
                 },
             },
-        },
-
-        // Environment variable handling
-        define: {
-            'process.env': {},
-            // Automatically set API URL for production builds
-            ...(isProduction && {
-                'import.meta.env.VITE_API_URL': JSON.stringify('https://edufeedbackhub.onrender.com')
-            })
         }
     };
 });
