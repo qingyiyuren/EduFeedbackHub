@@ -164,6 +164,8 @@ export default function ProfilePage() {
             <div style={{ maxWidth: 600, margin: '0 auto', padding: 20 }}>
                 <h2>Profile</h2>
                 
+                <p><Link to="/">Back to Home</Link></p>
+                
                 <div style={{ 
                     background: '#f9f9f9', 
                     padding: 20, 
@@ -227,6 +229,8 @@ export default function ProfilePage() {
     return (
         <div style={{ maxWidth: 600, margin: '0 auto', padding: 20 }}>
             <h2>{isEmpty ? 'Complete Your Profile' : 'Edit Profile'}</h2>
+            
+            <p><Link to="/">Back to Home</Link></p>
             
             {isEmpty && (
                 <div style={{ 
