@@ -24,7 +24,12 @@ SECRET_KEY = 'django-insecure-tch=3w9fas9t8e$jw@7$k&18_6(7ni0r0x-oe!wz2tb1a&ow(@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'edufeedbackhub.onrender.com',  # Domain name for the deployed app on Render
+    'localhost',                    # Allow access from local machine (development)
+    '127.0.0.1',                    # Localhost IP address (development)
+]
+
 
 # Application definition
 
