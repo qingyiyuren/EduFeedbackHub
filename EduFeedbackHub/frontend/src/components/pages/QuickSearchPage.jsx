@@ -354,8 +354,27 @@ export default function QuickSearchPage() {
                                                 : formatEntityName(record.entityName)
                                         }
                                         <span style={{color: '#aaa', marginLeft: 8, fontSize: 11}}>
-                                            {/* Show the visit time in local format */}
-                                            {record.timestamp ? new Date(record.timestamp).toLocaleString() : ''}
+                                            {/* Show the visit time in local format - Fix timezone handling */}
+                                            {record.timestamp ? (() => {
+                                                try {
+                                                    const date = new Date(record.timestamp);
+                                                    // Check if date is valid
+                                                    if (isNaN(date.getTime())) {
+                                                        return 'Invalid date';
+                                                    }
+                                                    // Format as local time with better formatting
+                                                    return date.toLocaleString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    });
+                                                } catch (error) {
+                                                    console.error('Error formatting timestamp:', error);
+                                                    return 'Invalid date';
+                                                }
+                                            })() : ''}
                                         </span>
                                     </Link>
                                 </li>

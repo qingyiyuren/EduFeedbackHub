@@ -2,6 +2,7 @@
 // This file automatically selects the correct backend URL based on the current environment
 
 // Get the API URL from environment variables or use default
+// Fix: Ensure local development uses localhost, production uses environment variable
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Debug logging for production troubleshooting
@@ -10,7 +11,8 @@ if (typeof window !== 'undefined') {
         hostname: window.location.hostname,
         VITE_API_URL: import.meta.env.VITE_API_URL,
         finalAPI_URL: API_URL,
-        isProduction: window.location.hostname.includes('onrender.com')
+        isProduction: window.location.hostname.includes('onrender.com'),
+        isLocalhost: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     });
 }
 

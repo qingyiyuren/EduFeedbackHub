@@ -33,10 +33,12 @@ export default defineConfig(({ command, mode }) => {
             }
         },
 
-        // Environment variable handling
+        // Environment variable handling - Fix production API URL logic
         define: {
             'import.meta.env.VITE_API_URL': JSON.stringify(
-                process.env.VITE_API_URL || 'https://edufeedbackhub.onrender.com'
+                isProduction 
+                    ? (process.env.VITE_API_URL || 'https://edufeedbackhub.onrender.com')
+                    : 'http://localhost:8000'
             )
         },
 

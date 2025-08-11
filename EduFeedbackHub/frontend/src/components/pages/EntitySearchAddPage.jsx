@@ -67,17 +67,17 @@ export default function EntitySearchAddPage({
             {/* Links to navigate back to parent entities if available */}
             {mergedParentInfo.universityId && (
                 <p>
-                    <Link to={`/university/${mergedParentInfo.universityId}`}>Back to University</Link>
+                    <Link to={`/university/${mergedParentInfo.universityId}?fromBack=1`}>Back to University</Link>
                 </p>
             )}
             {mergedParentInfo.collegeId && (
                 <p>
-                    <Link to={`/college/${mergedParentInfo.collegeId}`}>Back to College</Link>
+                    <Link to={`/college/${mergedParentInfo.collegeId}?fromBack=1`}>Back to College</Link>
                 </p>
             )}
             {mergedParentInfo.schoolId && (
                 <p>
-                    <Link to={`/school/${mergedParentInfo.schoolId}`}>Back to School</Link>
+                    <Link to={`/school/${mergedParentInfo.schoolId}?fromBack=1`}>Back to School</Link>
                 </p>
             )}
 

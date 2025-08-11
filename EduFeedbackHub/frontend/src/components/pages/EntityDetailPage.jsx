@@ -127,8 +127,11 @@ export default function EntityDetailPage({entityType = 'university'}) {
     // Record visit history only once per entity page load
     useEffect(() => {
         const fromVisit = query.get('fromVisit'); // Check if navigation is from recent visit
+        const fromBack = query.get('fromBack'); // Check if navigation is from back button
         if (!entityId || visitRecorded) return;
         if (fromVisit === '1') return; // Do not record if from recent visit
+        if (fromBack === '1') return; // Do not record if from back button (return navigation)
+        
         const token = localStorage.getItem('token');
         if (token && entityData && entityData.name) {
             // Compose a hierarchical name for visit history
@@ -332,13 +335,13 @@ export default function EntityDetailPage({entityType = 'university'}) {
 
                 {/* Back links to parent entities */}
                 {entityType === 'school' && entityData.college && (
-                    <p><Link to={`/college/${entityData.college.id}`}>Back to {formatEntityName(entityData.college.name)}</Link></p>
+                    <p><Link to={`/college/${entityData.college.id}?fromBack=1`}>Back to {formatEntityName(entityData.college.name)}</Link></p>
                 )}
                 {entityType === 'college' && parentEntity && (
-                    <p><Link to={`/university/${parentEntity.id}`}>Back to {formatEntityName(parentEntity.name)}</Link></p>
+                    <p><Link to={`/university/${parentEntity.id}?fromBack=1`}>Back to {formatEntityName(parentEntity.name)}</Link></p>
                 )}
                 {entityType === 'module' && entityData.school && (
-                    <p><Link to={`/school/${entityData.school.id}`}>Back to {formatEntityName(entityData.school.name)}</Link></p>
+                    <p><Link to={`/school/${entityData.school.id}?fromBack=1`}>Back to {formatEntityName(entityData.school.name)}</Link></p>
                 )}
 
                 <p><Link to="/">Back to Home</Link></p>

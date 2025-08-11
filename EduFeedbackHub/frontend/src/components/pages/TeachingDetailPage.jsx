@@ -173,7 +173,7 @@ export default function TeachingDetailPage() {
             {/* Navigation links placed after title */}
             <div style={{marginBottom: '1.5rem', marginTop: '1rem'}}>
                 <p>
-                    <Link to={`/module/${teachingData.module_id}`}>Back to Module</Link>
+                    <Link to={`/module/${teachingData.module_id}?fromBack=1`}>Back to Module</Link>
                 </p>
                 <p><Link to="/">Back to Home</Link></p>
             </div>

@@ -1105,44 +1105,56 @@ def visit_history_api(request):
             data = json.loads(request.body)
         except Exception:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
-        # --- Backend deduplication: only save if no recent record for this user/entity ---
+        
+        # Validate required fields
+        required_fields = ['entityType', 'entityId', 'entityName']
+        for field in required_fields:
+            if not data.get(field):
+                return JsonResponse({'error': f'Missing required field: {field}'}, status=400)
+        
+        # --- Improved Backend deduplication: check for recent record for this user/entity ---
         now = timezone.now()
-        one_minute_ago = now - timedelta(minutes=1)
-        exists = VisitHistory.objects.filter(
+        # Increase deduplication window to 5 minutes to avoid rapid duplicate visits
+        five_minutes_ago = now - timedelta(minutes=5)
+        
+        # Check for existing record within the time window
+        existing_record = VisitHistory.objects.filter(
             user=user,
             entity_type=data.get('entityType', ''),
             entity_id=data.get('entityId'),
-            timestamp__gte=one_minute_ago
-        ).exists()
-        if exists:
-            # Return the latest record (or just a message)
-            latest = VisitHistory.objects.filter(
+            timestamp__gte=five_minutes_ago
+        ).order_by('-timestamp').first()
+        
+        if existing_record:
+            # Return the existing record with info about deduplication
+            return JsonResponse({
+                'id': existing_record.id,
+                'entityType': existing_record.entity_type,
+                'entityId': existing_record.entity_id,
+                'entityName': existing_record.entity_name,
+                'timestamp': existing_record.timestamp.isoformat(),
+                'info': 'duplicate visit ignored - record exists within 5 minutes'
+            })
+        
+        # Create new VisitHistory record
+        try:
+            record = VisitHistory.objects.create(
                 user=user,
                 entity_type=data.get('entityType', ''),
-                entity_id=data.get('entityId')
-            ).order_by('-timestamp').first()
+                entity_id=data.get('entityId'),
+                entity_name=data.get('entityName', ''),
+            )
             return JsonResponse({
-                'id': latest.id,
-                'entityType': latest.entity_type,
-                'entityId': latest.entity_id,
-                'entityName': latest.entity_name,
-                'timestamp': latest.timestamp.isoformat(),
-                'info': 'duplicate visit ignored'
+                'id': record.id,
+                'entityType': record.entity_type,
+                'entityId': record.entity_id,
+                'entityName': record.entity_name,
+                'timestamp': record.timestamp.isoformat(),
             })
-        # Create VisitHistory record
-        record = VisitHistory.objects.create(
-            user=user,
-            entity_type=data.get('entityType', ''),
-            entity_id=data.get('entityId'),
-            entity_name=data.get('entityName', ''),
-        )
-        return JsonResponse({
-            'id': record.id,
-            'entityType': record.entity_type,
-            'entityId': record.entity_id,
-            'entityName': record.entity_name,
-            'timestamp': record.timestamp.isoformat(),
-        })
+        except Exception as e:
+            # Log the error and return a user-friendly message
+            print(f"Error creating visit history record: {e}")
+            return JsonResponse({'error': 'Failed to create visit record'}, status=500)
     else:
         # Method not allowed
         return JsonResponse({'error': 'Method not allowed'}, status=405)

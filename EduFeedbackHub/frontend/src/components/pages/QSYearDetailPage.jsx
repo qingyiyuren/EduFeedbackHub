@@ -41,7 +41,7 @@ function QSYearDetailPage() {
             <h1>QS World University Rankings - {year}</h1>
 
             {/* Link to go back to the list of years */}
-            <p><Link to="/years">Back to Years List</Link></p>
+            <p><Link to="/years?fromBack=1">Back to Years List</Link></p>
 
             {/* Rankings table */}
             <table style={{width: '100%', borderCollapse: 'collapse'}}>
