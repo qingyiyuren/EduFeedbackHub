@@ -34,8 +34,11 @@ each university, facilitating educational feedback and continuous improvement.
 - Deployment: Hosted on Render
     - Frontend: https://edufeedbackhub-frontend.onrender.com/
     - Backend API: https://edufeedbackhub.onrender.com/
-- Other: AI modules (sentiment analysis using VADER, word cloud generation) and text formatting using the title-case
-  package
+- AI modules: Sentiment analysis using VADER  
+- Visualization tools: Word cloud generation and data visualization with Recharts  
+- Utilities: Text formatting using the title-case package
+
+
 
 ## Installation and Running (Hosted Version)
 
