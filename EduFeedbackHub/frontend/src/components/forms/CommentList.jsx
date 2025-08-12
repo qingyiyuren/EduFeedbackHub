@@ -100,7 +100,7 @@ export default function CommentList({
                 <span style={{ marginLeft: 12, color: '#1976d2', cursor: 'pointer' }} onClick={() => handleReplyClick(comment.id)}>
                     Reply
                 </span>
-                {comment.user === Number(currentUserId) && (
+                {token && comment.user === Number(currentUserId) && (
                     <span style={{ marginLeft: 12, color: '#d32f2f', cursor: 'pointer' }} onClick={() => deleteComment(comment.id)}>
                         Delete
                     </span>
