@@ -19,7 +19,11 @@ export default function CommentForm({ targetType, targetId, targetIdName, parent
 
     // If not logged in, show login prompt
     if (!token) {
-        return <div style={{ color: '#d32f2f', margin: '16px 0' }}>Please log in to comment</div>;
+        return (
+            <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '8px' }}>
+                Please log in to comment
+            </div>
+        );
     }
 
     // Handle form submission
@@ -87,7 +91,11 @@ export default function CommentForm({ targetType, targetId, targetIdName, parent
                     {' '}Comment anonymously
                 </label>
             </div>
-            {error && <div style={{ color: '#d32f2f', marginBottom: 8 }}>{error}</div>}
+            {error && (
+                <div style={{ color: '#dc3545', fontSize: '12px', marginBottom: 8 }}>
+                    {error}
+                </div>
+            )}
             <button 
                 type="submit" 
                 disabled={submitting || !content.trim()} 

@@ -466,7 +466,7 @@ export default function EntityAddForm({
 
             {/* Duplicate entity warning with link */}
             {existingEntity && (
-                <p style={{color: 'red'}}>
+                <p style={{ color: '#dc3545', fontSize: '12px' }}>
                     This {config.displayName.toLowerCase()} already exists:{' '}
                     <a href={`/${entityType}/${existingEntity.id}`} style={{ color: '#1976d2', textDecoration: 'underline' }}>
                         {formatEntityName(existingEntity.name)}

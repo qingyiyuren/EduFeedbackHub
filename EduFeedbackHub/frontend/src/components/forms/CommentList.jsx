@@ -108,7 +108,9 @@ export default function CommentList({
             </div>
             {/* Show login tip if not logged in and trying to reply */}
             {loginTipForReplyId === comment.id && (
-                <div style={{ color: '#d32f2f', margin: '8px 0' }}>Please log in to reply</div>
+                <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '8px' }}>
+                    Please log in to reply
+                </div>
             )}
             {/* Show reply form if replying to this comment */}
             {replyingToId === comment.id && (

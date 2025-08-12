@@ -306,8 +306,16 @@ export default function TeachingDetailPage() {
                 {/* AI Analysis Loading and Error States */}
                 {sentimentLoading && <div style={{marginTop: 12}}>Analyzing comments...</div>}
                 {wordcloudLoading && <div style={{marginTop: 12}}>Generating word cloud...</div>}
-                {sentimentError && <div style={{marginTop: 12, color: 'red'}}>{sentimentError}</div>}
-                {wordcloudError && <div style={{marginTop: 12, color: 'red'}}>{wordcloudError}</div>}
+                {sentimentError && (
+                    <div style={{ marginTop: 8, color: '#dc3545', fontSize: '12px' }}>
+                        {sentimentError}
+                    </div>
+                )}
+                {wordcloudError && (
+                    <div style={{ marginTop: 8, color: '#dc3545', fontSize: '12px' }}>
+                        {wordcloudError}
+                    </div>
+                )}
                 
                 {/* Conditional rendering of rating trend chart */}
                 {showTrend && teachingData.lecturer_id && (

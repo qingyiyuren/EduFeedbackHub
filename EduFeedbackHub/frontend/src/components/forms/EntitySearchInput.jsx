@@ -272,17 +272,14 @@ export default function EntitySearchInput({
 
             {/* No Results Message */}
             {showNoResults && isFocused && query.trim() && (
-                <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    padding: '4px 8px',
-                    marginTop: '2px',
-                    fontSize: '12px',
-                    color: '#dc3545',
-                    zIndex: 1000,
-                }}>
+                <div
+                    style={{
+                        marginTop: '8px',
+                        padding: '4px 8px',
+                        fontSize: '12px',
+                        color: '#dc3545',
+                    }}
+                >
                     No {config.displayName.toLowerCase()} found for "{noResultsQuery}". You can add it.
                 </div>
             )}
