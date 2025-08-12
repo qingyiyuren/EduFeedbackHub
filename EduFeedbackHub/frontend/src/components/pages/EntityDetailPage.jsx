@@ -85,6 +85,9 @@ export default function EntityDetailPage({entityType = 'university'}) {
     // State to ensure visit is only recorded once per page load
     const [visitRecorded, setVisitRecorded] = useState(false);
 
+    // Get auth token for API requests that require authentication
+    const token = localStorage.getItem('token');
+
     // Fetch entity data when component mounts or entityId changes
     useEffect(() => {
         if (!entityId) return;
@@ -96,6 +99,12 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 if (data[entityType]) {
                     // Backend returns nested structure like {university: {...}, comments: [...], rating: {...}}
                     setEntityData(data[entityType]);
+                    // Set teachings for module page if provided
+                    if (entityType === 'module' && Array.isArray(data.teachings)) {
+                        setTeachings(data.teachings);
+                    } else {
+                        setTeachings([]);
+                    }
                     if (data.rating) {
                         setRatingData({
                             average: data.rating.average || 0,
@@ -107,6 +116,12 @@ export default function EntityDetailPage({entityType = 'university'}) {
                 } else {
                     // Direct data structure (fallback)
                     setEntityData(data);
+                    // Set teachings for module page if provided
+                    if (entityType === 'module' && Array.isArray(data.teachings)) {
+                        setTeachings(data.teachings);
+                    } else {
+                        setTeachings([]);
+                    }
                     if (data.rating) {
                         setRatingData({
                             average: data.rating.average || 0,
@@ -221,8 +236,8 @@ export default function EntityDetailPage({entityType = 'university'}) {
                     'Authorization': `Token ${token}`
                 },
                 body: JSON.stringify({
-                    module: entityData.id,
-                    lecturer: lecturerId,
+                    module_id: entityData.id,
+                    lecturer_id: lecturerId,
                     year: selectedYear
                 })
             });
