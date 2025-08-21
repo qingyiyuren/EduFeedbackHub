@@ -11,7 +11,7 @@ each university, facilitating educational feedback and continuous improvement.
 - Secure student and teacher account registration and login with strict permission controls, allowing users to delete
   only their own comments and replies.
 - Detailed rating system supporting advanced search by teacher, academic year, and module.
-- Interactive data visualization using dynamic rating trend line charts to track performance over time.
+- Interactive data visualization using dynamic rating trend line charts and quartile range (IQR) plots to track performance over time and identify outliers.
 - Real-time comment updates with instant synchronization across users.
 - Seamless navigation experience preserving the current ranking year context after viewing detailed pages.
 - AI-powered sentiment analysis for teaching record comments, offering insightful interpretation of feedback.

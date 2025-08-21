@@ -719,6 +719,8 @@ def lecturer_details_api(request, lecturer_id):
 def lecturer_rating_trend_api(request, lecturer_id):
     """
     Return rating trends for a lecturer: per year, per course, and overall. Supports filtering by university_id, college_id, school_id, and year.
+    Also returns per-year quartile statistics (Q1, median, Q3, min, max) for the overall distribution
+    so that the frontend can render an interquartile-range (IQR) chart.
     """
     # Get the lecturer object or return 404 if not found
     lecturer = get_object_or_404(Lecturer, id=lecturer_id)
@@ -750,40 +752,142 @@ def lecturer_rating_trend_api(request, lecturer_id):
     years = sorted(set(t.year for t in teachings))  # All years taught
     course_names = sorted(set(t.module.name for t in teachings))  # All course/module names
 
-    # Initialize nested dictionaries to store ratings
-    course_year_rating = {name: {year: [] for year in years} for name in course_names}
-    overall_year_rating = {year: [] for year in years}
+    # Initialize nested dictionaries to store RAW rating scores (not per-teaching averages)
+    course_year_scores = {name: {year: [] for year in years} for name in course_names}
+    overall_year_scores = {year: [] for year in years}
 
     # Use Django ContentType to filter ratings tied to Teaching model
     ct = ContentType.objects.get_for_model(Teaching)
 
-    # Aggregate ratings by module and year
+    # Aggregate RAW scores by module and year
     for t in teachings:
         ratings = Rating.objects.filter(content_type=ct, object_id=t.id)
-        avg = ratings.aggregate(Avg('score'))['score__avg']
-        if avg is not None:
-            course_year_rating[t.module.name][t.year].append(float(avg))
-            overall_year_rating[t.year].append(float(avg))
+        for r in ratings:
+            try:
+                score_val = float(r.score)
+            except Exception:
+                continue
+            course_year_scores[t.module.name][t.year].append(score_val)
+            overall_year_scores[t.year].append(score_val)
+
+    # --- Compute per-year quartile statistics for the overall distribution ---
+    def compute_quartiles(values):
+        """Compute min, Q1, median (Q2), Q3, max for a list of numeric values.
+        Returns a tuple (vmin, q1, q2, q3, vmax). If values is empty, returns Nones.
+        """
+        if not values:
+            return (None, None, None, None, None)
+        arr = sorted(values)
+        n = len(arr)
+
+        def median(a):
+            m = len(a)
+            mid = m // 2
+            if m == 0:
+                return None
+            if m % 2 == 1:
+                return float(a[mid])
+            return (a[mid - 1] + a[mid]) / 2.0
+
+        q2 = median(arr)
+        if n % 2 == 0:
+            lower = arr[: n // 2]
+            upper = arr[n // 2 :]
+        else:
+            lower = arr[: n // 2]
+            upper = arr[n // 2 + 1 :]
+
+        q1 = median(lower)
+        q3 = median(upper)
+        return (float(arr[0]), float(q1) if q1 is not None else None, float(q2) if q2 is not None else None, float(q3) if q3 is not None else None, float(arr[-1]))
+
+    overall_min = []
+    overall_q1 = []
+    overall_q2 = []  # median
+    overall_q3 = []
+    overall_max = []
+    overall_avg = []
+    for y in years:
+        values = overall_year_scores[y]
+        if values:
+            vmin, q1, q2, q3, vmax = compute_quartiles(values)
+            overall_min.append(round(vmin, 2) if vmin is not None else None)
+            overall_q1.append(round(q1, 2) if q1 is not None else None)
+            overall_q2.append(round(q2, 2) if q2 is not None else None)
+            overall_q3.append(round(q3, 2) if q3 is not None else None)
+            overall_max.append(round(vmax, 2) if vmax is not None else None)
+            overall_avg.append(round(sum(values) / len(values), 2))
+        else:
+            overall_min.append(None)
+            overall_q1.append(None)
+            overall_q2.append(None)
+            overall_q3.append(None)
+            overall_max.append(None)
+            overall_avg.append(None)
+
+    # Utility to round a value to 2 decimals or return None
+    def r2(val):
+        return round(val, 2) if val is not None else None
+
+    # Build per-course quartiles per year safely (avoid repeated compute calls and handle empties)
+    courses_quartiles_safe = {}
+    for name in course_names:
+        per_year_min = []
+        per_year_q1 = []
+        per_year_q2 = []
+        per_year_q3 = []
+        per_year_max = []
+        for y in years:
+            vals = course_year_scores[name][y]
+            if vals:
+                vmin, q1, q2, q3, vmax = compute_quartiles(vals)
+                per_year_min.append(r2(vmin))
+                per_year_q1.append(r2(q1))
+                per_year_q2.append(r2(q2))
+                per_year_q3.append(r2(q3))
+                per_year_max.append(r2(vmax))
+            else:
+                per_year_min.append(None)
+                per_year_q1.append(None)
+                per_year_q2.append(None)
+                per_year_q3.append(None)
+                per_year_max.append(None)
+        courses_quartiles_safe[name] = {
+            'min': per_year_min,
+            'q1': per_year_q1,
+            'median': per_year_q2,
+            'q3': per_year_q3,
+            'max': per_year_max,
+        }
 
     # Prepare the JSON response
     result = {
         'years': years,  # List of years in sorted order
 
-        # Overall average ratings per year
-        'overall': [
-            round(sum(overall_year_rating[y]) / len(overall_year_rating[y]), 2) if overall_year_rating[y] else None
-            for y in years
-        ],
+        # Overall average ratings per year (same as before)
+        'overall': overall_avg,
 
-        # Per-course average ratings per year
+        # Per-course average ratings per year (computed from RAW scores)
         'courses': {
             name: [
-                round(sum(course_year_rating[name][y]) / len(course_year_rating[name][y]), 2)
-                if course_year_rating[name][y] else None
+                round(sum(course_year_scores[name][y]) / len(course_year_scores[name][y]), 2)
+                if course_year_scores[name][y] else None
                 for y in years
             ]
             for name in course_names
-        }
+        },
+
+        # New: per-year quartile arrays for overall distribution
+        'overall_quartiles': {
+            'min': overall_min,
+            'q1': overall_q1,
+            'median': overall_q2,
+            'q3': overall_q3,
+            'max': overall_max,
+        },
+
+        # New: per-course quartile arrays per year (computed on the underlying per-teaching averages)
+        'courses_quartiles': courses_quartiles_safe
     }
 
     return JsonResponse(result)
